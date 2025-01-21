@@ -22,6 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { StarRating } from "@/components/StarRating"
 
 interface EditJobModalProps {
   job: Job
@@ -129,6 +130,18 @@ export function EditJobModal({ job, onSave }: EditJobModalProps) {
                 onChange={handleInputChange}
                 className="col-span-3"
               />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="rating" className="text-right">
+                Rating
+              </Label>
+              <div className="col-span-3">
+                <StarRating
+                  rating={jobData.rating}
+                  onRatingChange={(value) => setJobData(prev => ({ ...prev, rating: value }))}
+                  editable
+                />
+              </div>
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="status" className="text-right">

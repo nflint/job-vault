@@ -142,17 +142,17 @@ export default function JobsPage() {
       ),
     },
     {
-      accessorKey: "excitement",
-      header: "Excitement",
+      accessorKey: "rating",
+      header: "Rating",
       cell: ({ row, table }) => (
         <InlineEdit
-          value={row.original.excitement}
+          value={row.original.rating}
           onSave={(value) => {
-            const updatedJob = { ...row.original, excitement: Number(value) }
+            const updatedJob = { ...row.original, rating: Number(value) }
             table.options.meta?.updateData(updatedJob)
           }}
         >
-          <StarRating rating={row.original.excitement} />
+          <StarRating rating={row.original.rating} />
         </InlineEdit>
       ),
     },

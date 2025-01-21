@@ -3,14 +3,14 @@ export interface Job {
   user_id: string
   position: string
   company: string
-  max_salary: string | null
-  location: string | null
+  max_salary?: string
+  location?: string
   status: JobStatus
+  rating: number
   date_saved: string
   deadline: string | null
   date_applied: string | null
   follow_up: string | null
-  excitement: number
   created_at: string
   updated_at: string
 }
