@@ -1,0 +1,63 @@
+flowchart TB
+    subgraph Data Sources
+        PH[Professional History]
+        JD[Job Descriptions]
+        S[Skills Database]
+        
+        subgraph Professional History Details
+            PH --> WE[Work Experience]
+            PH --> ED[Education]
+            PH --> PR[Projects]
+            PH --> CE[Certifications]
+        end
+    end
+
+    subgraph Vectorization Engine
+        WE --> |Generate| WEV[Experience Vectors]
+        ED --> |Generate| EDV[Education Vectors]
+        PR --> |Generate| PRV[Project Vectors]
+        S --> |Generate| SV[Skill Vectors]
+        JD --> |Generate| JDV[Job Vectors]
+        
+        subgraph Vector Processing
+            WEV & EDV & PRV --> CCV[Combined Career Vector]
+            SV --> |Enrich| CCV
+        end
+    end
+
+    subgraph Vector Storage
+        VDB[(Supabase pgvector)]
+        CCV --> VDB
+        JDV --> VDB
+        SV --> VDB
+    end
+
+    subgraph Search & Match Operations
+        VDB --> SM[Semantic Matching]
+        VDB --> RM[Role Matching]
+        VDB --> CM[Career Path Analysis]
+        
+        SM --> R1[Experience Relevance]
+        RM --> R2[Job Fit Scoring]
+        CM --> R3[Career Insights]
+    end
+
+    subgraph Applications
+        R1 --> A1[Resume Tailoring]
+        R2 --> A2[Job Recommendations]
+        R3 --> A3[Career Development]
+        
+        subgraph AI Features
+            A1 --> F1[Content Suggestions]
+            A1 --> F2[Achievement Enhancement]
+            A2 --> F3[Application Strategy]
+            A3 --> F4[Skill Gap Analysis]
+        end
+    end
+
+    subgraph Resume Generation
+        A1 --> RG[Resume Builder]
+        F1 --> RG
+        F2 --> RG
+        RG --> FE[Final Export]
+    end
