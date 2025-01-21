@@ -83,10 +83,10 @@ export default function TestPage() {
         max_salary: '100000',
         location: 'Remote',
         status: 'BOOKMARKED',
+        rating: 3,
         deadline: null,
         date_applied: null,
-        follow_up: null,
-        excitement: 3
+        follow_up: null
       })
       console.log('Job created:', newJob)
       loadJobs() // Reload the list

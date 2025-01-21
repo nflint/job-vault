@@ -20,9 +20,14 @@ export const jobsService = {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) throw new Error('Not authenticated')
 
+    const now = new Date().toISOString()
     const { data, error } = await supabase
       .from('jobs')
-      .insert([{ ...job, user_id: user.id }])
+      .insert([{ 
+        ...job, 
+        user_id: user.id,
+        date_saved: now
+      }])
       .select()
       .single()
 

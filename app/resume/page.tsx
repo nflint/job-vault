@@ -1,13 +1,12 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Copy, Trash2 } from "lucide-react"
 import { DataTable } from "@/components/ui/data-table"
 import type { ColumnDef } from "@tanstack/react-table"
 import { StarRating } from "@/components/StarRating"
 import { InlineEdit } from "@/components/InlineEdit"
-import { supabase } from "@/lib/supabase"
 import { AddResumeModal } from "@/components/AddResumeModal"
 import {
   Dialog,
@@ -152,9 +151,7 @@ function DeleteConfirmDialog({ resumeId, resumeTitle, onConfirm }: DeleteConfirm
 
 export default function ResumePage() {
   const [resumes, setResumes] = useState<Resume[]>(TEST_RESUMES)
-  const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [user, setUser] = useState<any>({ id: 'test-user-1' })
 
   async function handleUpdateResume(updatedResume: Resume) {
     try {
@@ -287,10 +284,6 @@ export default function ResumePage() {
       }
     },
   ]
-
-  if (loading) {
-    return <div className="container mx-auto p-4">Loading...</div>
-  }
 
   return (
     <div className="container mx-auto p-4">
