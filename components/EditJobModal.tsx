@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -13,58 +13,45 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { Pencil } from 'lucide-react'
-
-interface Job {
-  id: number
-  position: string
-  company: string
-  maxSalary: string
-  location: string
-  status: string
-  dateSaved: string
-  deadline: string
-  dateApplied: string
-  followUp: string
-  excitement: number
-}
+import { Edit } from 'lucide-react'
+import type { Job } from '@/types'
 
 interface EditJobModalProps {
   job: Job
-  onSave: (updatedJob: Job) => void
+  onSave: (job: Job) => void
 }
 
 export function EditJobModal({ job, onSave }: EditJobModalProps) {
   const [open, setOpen] = useState(false)
-  const [jobData, setJobData] = useState<Job>(job)
-
-  useEffect(() => {
-    setJobData(job)
-  }, [job])
+  const [jobData, setJobData] = useState(job)
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     setJobData(prev => ({ ...prev, [name]: value }))
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    onSave(jobData)
-    setOpen(false)
+    try {
+      onSave(jobData)
+      setOpen(false)
+    } catch (error) {
+      console.error('Error updating job:', error)
+    }
   }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="sm">
-          <Pencil className="h-4 w-4" />
+        <Button variant="ghost" size="icon">
+          <Edit className="h-4 w-4" />
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Edit Job</DialogTitle>
           <DialogDescription>
-            Make changes to the job application. Click save when you're done.
+            Make changes to the job details. Click save when you're done.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
@@ -79,6 +66,7 @@ export function EditJobModal({ job, onSave }: EditJobModalProps) {
                 value={jobData.position}
                 onChange={handleInputChange}
                 className="col-span-3"
+                required
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
@@ -91,16 +79,17 @@ export function EditJobModal({ job, onSave }: EditJobModalProps) {
                 value={jobData.company}
                 onChange={handleInputChange}
                 className="col-span-3"
+                required
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="maxSalary" className="text-right">
+              <Label htmlFor="max_salary" className="text-right">
                 Max Salary
               </Label>
               <Input
-                id="maxSalary"
-                name="maxSalary"
-                value={jobData.maxSalary}
+                id="max_salary"
+                name="max_salary"
+                value={jobData.max_salary || ''}
                 onChange={handleInputChange}
                 className="col-span-3"
               />
@@ -112,19 +101,7 @@ export function EditJobModal({ job, onSave }: EditJobModalProps) {
               <Input
                 id="location"
                 name="location"
-                value={jobData.location}
-                onChange={handleInputChange}
-                className="col-span-3"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="status" className="text-right">
-                Status
-              </Label>
-              <Input
-                id="status"
-                name="status"
-                value={jobData.status}
+                value={jobData.location || ''}
                 onChange={handleInputChange}
                 className="col-span-3"
               />
@@ -137,22 +114,7 @@ export function EditJobModal({ job, onSave }: EditJobModalProps) {
                 id="deadline"
                 name="deadline"
                 type="date"
-                value={jobData.deadline}
-                onChange={handleInputChange}
-                className="col-span-3"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="excitement" className="text-right">
-                Excitement
-              </Label>
-              <Input
-                id="excitement"
-                name="excitement"
-                type="number"
-                min="1"
-                max="5"
-                value={jobData.excitement}
+                value={jobData.deadline || ''}
                 onChange={handleInputChange}
                 className="col-span-3"
               />

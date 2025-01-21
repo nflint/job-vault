@@ -14,16 +14,25 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Plus } from 'lucide-react'
+import { jobsService } from '@/lib/jobs'
+import type { Job } from '@/types'
 
-export function AddJobModal() {
+interface AddJobModalProps {
+  onJobAdded?: () => void
+}
+
+export function AddJobModal({ onJobAdded }: AddJobModalProps) {
   const [open, setOpen] = useState(false)
   const [jobData, setJobData] = useState({
     position: '',
     company: '',
-    maxSalary: '',
+    max_salary: '',
     location: '',
-    status: '',
+    status: 'BOOKMARKED' as const,
     deadline: '',
+    date_applied: null,
+    follow_up: null,
+    excitement: 0
   })
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -31,20 +40,27 @@ export function AddJobModal() {
     setJobData(prev => ({ ...prev, [name]: value }))
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // TODO: Implement job submission logic
-    console.log('Submitting job:', jobData)
-    setOpen(false)
-    // Reset form
-    setJobData({
-      position: '',
-      company: '',
-      maxSalary: '',
-      location: '',
-      status: '',
-      deadline: '',
-    })
+    try {
+      await jobsService.create(jobData)
+      setOpen(false)
+      // Reset form
+      setJobData({
+        position: '',
+        company: '',
+        max_salary: '',
+        location: '',
+        status: 'BOOKMARKED' as const,
+        deadline: '',
+        date_applied: null,
+        follow_up: null,
+        excitement: 0
+      })
+      onJobAdded?.()
+    } catch (error) {
+      console.error('Error creating job:', error)
+    }
   }
 
   return (
@@ -74,6 +90,7 @@ export function AddJobModal() {
                 value={jobData.position}
                 onChange={handleInputChange}
                 className="col-span-3"
+                required
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
@@ -86,16 +103,17 @@ export function AddJobModal() {
                 value={jobData.company}
                 onChange={handleInputChange}
                 className="col-span-3"
+                required
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="maxSalary" className="text-right">
+              <Label htmlFor="max_salary" className="text-right">
                 Max Salary
               </Label>
               <Input
-                id="maxSalary"
-                name="maxSalary"
-                value={jobData.maxSalary}
+                id="max_salary"
+                name="max_salary"
+                value={jobData.max_salary}
                 onChange={handleInputChange}
                 className="col-span-3"
               />
@@ -108,18 +126,6 @@ export function AddJobModal() {
                 id="location"
                 name="location"
                 value={jobData.location}
-                onChange={handleInputChange}
-                className="col-span-3"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="status" className="text-right">
-                Status
-              </Label>
-              <Input
-                id="status"
-                name="status"
-                value={jobData.status}
                 onChange={handleInputChange}
                 className="col-span-3"
               />

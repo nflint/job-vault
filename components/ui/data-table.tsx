@@ -19,16 +19,21 @@ import {
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
+  meta?: {
+    updateData: (updatedData: TData) => void
+  }
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
+  meta,
 }: DataTableProps<TData, TValue>) {
   const table = useReactTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
+    meta,
   })
 
   return (

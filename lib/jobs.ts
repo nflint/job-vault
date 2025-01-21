@@ -34,15 +34,26 @@ export const jobsService = {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) throw new Error('Not authenticated')
 
+    console.log('Updating job with ID:', id)
+    console.log('Update payload:', updates)
+
+    // Remove any undefined values from updates
+    const cleanUpdates = Object.fromEntries(
+      Object.entries(updates).filter(([_, v]) => v !== undefined)
+    )
+
     const { data, error } = await supabase
       .from('jobs')
-      .update(updates)
+      .update(cleanUpdates)
       .eq('id', id)
       .eq('user_id', user.id) // Ensure users can only update their own jobs
       .select()
       .single()
 
-    if (error) throw error
+    if (error) {
+      console.error('Supabase error:', error)
+      throw error
+    }
     return data as Job
   },
 
