@@ -9,7 +9,7 @@
 - [ ] Certifications and credentials tracking
 - [ ] Rich text editing for descriptions
 - [ ] Version history tracking
-- [ ] LinkedIn data import (P1)
+- [ ] One-time LinkedIn data import (P1)
 
 ### Data Structures
 ```typescript
@@ -18,21 +18,34 @@ interface ProfessionalHistory {
   user_id: string
   last_updated: string
   is_complete: boolean
-  linkedin_data?: LinkedInData
+  imported_from_linkedin?: {
+    date: string
+    profile_id: string
+    data: LinkedInData
+  }
   content_embedding?: number[] // For AI features
 }
 
 interface WorkExperience {
   id: string
   history_id: string
+  source: 'linkedin_import' | 'manual'
+  import_date?: string
+  
+  // Core fields
   company: string
   title: string
+  location?: string
+  employment_type?: string
   start_date: string
   end_date?: string
   description: string
+  
+  // Enhanced features
   achievements: Achievement[]
   technologies: string[]
-  content_embedding?: number[] // For AI matching
+  impact_metrics?: ImpactMetric[]
+  content_embedding?: number[]
   created_at: string
   updated_at: string
 }
@@ -45,11 +58,13 @@ interface Achievement {
     unit: string
     description: string
   }[]
+  impact_score?: number
 }
 
 interface Education {
   id: string
   history_id: string
+  source: 'linkedin_import' | 'manual'
   institution: string
   degree: string
   field: string
@@ -57,7 +72,9 @@ interface Education {
   end_date: string
   gpa?: number
   achievements: string[]
+  projects?: Project[]
   created_at: string
+  content_embedding?: number[]
 }
 
 interface Project {
@@ -69,19 +86,35 @@ interface Project {
   url?: string
   start_date?: string
   end_date?: string
-  metrics?: {
-    key: string
-    value: string
-  }[]
+  metrics?: ProjectMetric[]
+  content_embedding?: number[]
 }
 
 interface Skill {
   id: string
   name: string
   category: string
+  source: 'linkedin_import' | 'manual' | 'extracted'
   proficiency: 1 | 2 | 3 | 4 | 5
   years_experience?: number
   last_used_date?: string
+  contexts: SkillContext[]
+  endorsement_count?: number // From LinkedIn import
+}
+
+interface SkillContext {
+  experience_id: string
+  usage_description: string
+  proficiency_at_time: number
+  duration_months: number
+}
+
+interface ImpactMetric {
+  category: 'revenue' | 'efficiency' | 'scale' | 'quality' | 'other'
+  value: number
+  unit: string
+  description: string
+  confidence_score: number
 }
 ```
 
@@ -95,14 +128,16 @@ interface Skill {
 - [ ] Technology stack visualization
 - [ ] Loading skeletons
 - [ ] Error states
+- [ ] Import status tracker
 
 ### Modal Dialogs
 - [ ] Add/edit experience modal
 - [ ] Add/edit education modal
 - [ ] Add/edit project modal
 - [ ] Skills management modal
-- [ ] LinkedIn import configuration
+- [ ] LinkedIn import wizard
 - [ ] Data validation warnings
+- [ ] Achievement builder
 
 ## 3. Authentication & Security
 - [ ] Supabase authentication integration
@@ -120,6 +155,7 @@ interface Skill {
 - [ ] Real-time updates
 - [ ] Data validation and sanitization
 - [ ] Version control system
+- [ ] Import history logging
 
 ### State Management
 - [ ] Complex form state management
@@ -128,6 +164,7 @@ interface Skill {
 - [ ] Draft saving
 - [ ] Error handling
 - [ ] Loading states
+- [ ] Import state tracking
 
 ## 5. UI/UX Features
 ### Styling
@@ -144,7 +181,8 @@ interface Skill {
 - [ ] Keyboard shortcuts
 - [ ] Inline editing
 - [ ] Context-aware suggestions
-- [ ] Data import wizards
+- [ ] Import wizard
+- [ ] Achievement builder interface
 
 ## 6. Technical Implementation
 ### Framework & Libraries
@@ -164,6 +202,7 @@ interface Skill {
 - [ ] Achievement impact scoring
 - [ ] Resume tailoring suggestions
 - [ ] Job matching capabilities
+- [ ] Impact metric suggestions
 
 ### Performance
 - [ ] Efficient form state management
@@ -180,7 +219,7 @@ interface Skill {
 - Skills should be categorized and include proficiency levels
 - Achievement metrics should be quantifiable where possible
 - System should support future AI-powered features
-- LinkedIn import capability is a P1 priority
+- LinkedIn import is a one-time operation with manual re-import option
 - All dates should be stored in ISO format
 - Vector embeddings enable AI-powered matching and suggestions
 

@@ -1,0 +1,72 @@
+classDiagram
+    class LinkedInProfile {
+        positions: Position[]
+        education: Education[]
+        skills: Skill[]
+        certifications: Certification[]
+        volunteering: Volunteer[]
+        accomplishments: Accomplishment[]
+        recommendations: Recommendation[]
+    }
+
+    class Position {
+        companyName: string
+        title: string
+        location: string
+        startDate: DateObj
+        endDate: DateObj
+        description: string
+        employmentType: string
+        company: CompanyData
+    }
+
+    class Education {
+        schoolName: string
+        degreeName: string
+        fieldOfStudy: string
+        startDate: DateObj
+        endDate: DateObj
+        activities: string[]
+        grade: string
+    }
+
+    class Skill {
+        name: string
+        endorsements: number
+        endorsedBy: Profile[]
+    }
+
+    LinkedInProfile --> Position
+    LinkedInProfile --> Education
+    LinkedInProfile --> Skill
+
+    %% Our System
+    class OurProfessionalHistory {
+        workExperiences: WorkExperience[]
+        education: EducationEntry[]
+        skills: SkillEntry[]
+        projects: Project[]
+        certifications: Certification[]
+    }
+
+    class WorkExperience {
+        company: string
+        title: string
+        startDate: string
+        endDate: string
+        description: string
+        achievements: Achievement[]
+        technologies: string[]
+        contentEmbedding: vector
+    }
+
+    class SkillEntry {
+        name: string
+        category: string
+        proficiency: number
+        contexts: SkillContext[]
+        lastUsed: string
+    }
+
+    OurProfessionalHistory --> WorkExperience
+    OurProfessionalHistory --> SkillEntry
