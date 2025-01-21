@@ -20,20 +20,9 @@ import type { ColumnDef } from "@tanstack/react-table"
 import { AddJobModal } from "@/components/AddJobModal"
 import { EditJobModal } from "@/components/EditJobModal"
 import { InlineEdit } from "@/components/InlineEdit"
-
-interface Job {
-  id: number
-  position: string
-  company: string
-  maxSalary: string
-  location: string
-  status: string
-  dateSaved: string
-  deadline: string
-  dateApplied: string
-  followUp: string
-  excitement: number
-}
+import { jobsService } from "@/lib/jobs"
+import { supabase } from "@/lib/supabase"
+import type { Job, JobStatus } from "@/types"
 
 function handleSaveJob(updatedJob: Job) {
   console.log("Saving job:", updatedJob)
@@ -75,7 +64,7 @@ const columns: ColumnDef<Job>[] = [
         value={row.original.excitement}
         onSave={(value) => {
           const updatedJob = { ...row.original, excitement: Number(value) }
-          table.options.meta?.updateData(handleSaveJob(updatedJob))
+          table.options.meta?.updateData(updatedJob)
         }}
       >
         <StarRating rating={row.original.excitement} />
@@ -94,20 +83,20 @@ const columns: ColumnDef<Job>[] = [
         value={row.original.company}
         onSave={(value) => {
           const updatedJob = { ...row.original, company: value }
-          table.options.meta?.updateData(handleSaveJob(updatedJob))
+          table.options.meta?.updateData(updatedJob)
         }}
       />
     ),
   },
   {
-    accessorKey: "maxSalary",
+    accessorKey: "max_salary",
     header: "Max Salary",
     cell: ({ row, table }) => (
       <InlineEdit
-        value={row.original.maxSalary}
+        value={row.original.max_salary || ''}
         onSave={(value) => {
-          const updatedJob = { ...row.original, maxSalary: value }
-          table.options.meta?.updateData(handleSaveJob(updatedJob))
+          const updatedJob = { ...row.original, max_salary: value }
+          table.options.meta?.updateData(updatedJob)
         }}
       />
     ),
@@ -117,10 +106,10 @@ const columns: ColumnDef<Job>[] = [
     header: "Location",
     cell: ({ row, table }) => (
       <InlineEdit
-        value={row.original.location}
+        value={row.original.location || ''}
         onSave={(value) => {
           const updatedJob = { ...row.original, location: value }
-          table.options.meta?.updateData(handleSaveJob(updatedJob))
+          table.options.meta?.updateData(updatedJob)
         }}
       />
     ),
@@ -132,42 +121,42 @@ const columns: ColumnDef<Job>[] = [
       <InlineEdit
         value={row.original.status}
         onSave={(value) => {
-          const updatedJob = { ...row.original, status: value }
-          table.options.meta?.updateData(handleSaveJob(updatedJob))
+          const updatedJob = { ...row.original, status: value as JobStatus }
+          table.options.meta?.updateData(updatedJob)
         }}
       />
     ),
   },
   {
-    accessorKey: "dateSaved",
+    accessorKey: "date_saved",
     header: "Date Saved",
   },
   {
     accessorKey: "deadline",
     header: "Deadline",
-    cell: ({ row, column, table }) => (
+    cell: ({ row, table }) => (
       <InlineEdit
-        value={row.original.deadline}
+        value={row.original.deadline || ''}
         onSave={(value) => {
           const updatedJob = { ...row.original, deadline: value }
-          table.options.meta?.updateData(handleSaveJob(updatedJob))
+          table.options.meta?.updateData(updatedJob)
         }}
       />
     ),
   },
   {
-    accessorKey: "dateApplied",
+    accessorKey: "date_applied",
     header: "Date Applied",
   },
   {
-    accessorKey: "followUp",
+    accessorKey: "follow_up",
     header: "Follow up",
-    cell: ({ row, column, table }) => (
+    cell: ({ row, table }) => (
       <InlineEdit
-        value={row.original.followUp}
+        value={row.original.follow_up || ''}
         onSave={(value) => {
-          const updatedJob = { ...row.original, followUp: value }
-          table.options.meta?.updateData(handleSaveJob(updatedJob))
+          const updatedJob = { ...row.original, follow_up: value }
+          table.options.meta?.updateData(updatedJob)
         }}
       />
     ),
@@ -175,96 +164,32 @@ const columns: ColumnDef<Job>[] = [
   {
     id: "actions",
     header: "Actions",
-    cell: ({ row }) => <EditJobModal job={row.original} onSave={handleSaveJob} />,
+    cell: ({ row }) => <EditJobModal job={row.original} onSave={handleUpdateJob} />,
   },
 ]
 
 export default function JobsPage() {
-  const [jobs, setJobs] = useState<Job[]>([
-    {
-      id: 1,
-      position: "Marketing Manager - Sample Job",
-      company: "Acme Corp",
-      maxSalary: "$80,000",
-      location: "New York, NY",
-      status: "Applied",
-      dateSaved: "01/09/2025",
-      deadline: "02/15/2025",
-      dateApplied: "01/15/2025",
-      followUp: "01/22/2025",
-      excitement: 4,
-    },
-    {
-      id: 2,
-      position: "Product Designer - Sample Job",
-      company: "Tech Innovations",
-      maxSalary: "$95,000",
-      location: "Remote",
-      status: "Interviewing",
-      dateSaved: "01/10/2025",
-      deadline: "02/28/2025",
-      dateApplied: "01/18/2025",
-      followUp: "01/25/2025",
-      excitement: 5,
-    },
-    {
-      id: 3,
-      position: "Operations Manager - Sample Job",
-      company: "Global Logistics",
-      maxSalary: "$75,000",
-      location: "Chicago, IL",
-      status: "Bookmarked",
-      dateSaved: "01/12/2025",
-      deadline: "03/01/2025",
-      dateApplied: "N/A",
-      followUp: "N/A",
-      excitement: 3,
-    },
-    {
-      id: 4,
-      position: "Software Engineer - Sample Job",
-      company: "CodeCraft Solutions",
-      maxSalary: "$120,000",
-      location: "San Francisco, CA",
-      status: "Offered",
-      dateSaved: "01/05/2025",
-      deadline: "01/31/2025",
-      dateApplied: "01/08/2025",
-      followUp: "01/20/2025",
-      excitement: 5,
-    },
-    {
-      id: 5,
-      position: "Data Analyst - Sample Job",
-      company: "DataDriven Insights",
-      maxSalary: "$85,000",
-      location: "Boston, MA",
-      status: "Rejected",
-      dateSaved: "01/07/2025",
-      deadline: "02/10/2025",
-      dateApplied: "01/12/2025",
-      followUp: "01/19/2025",
-      excitement: 2,
-    },
-    {
-      id: 6,
-      position: "UX Researcher - Sample Job",
-      company: "User First Design",
-      maxSalary: "$90,000",
-      location: "Austin, TX",
-      status: "Applying",
-      dateSaved: "01/14/2025",
-      deadline: "02/20/2025",
-      dateApplied: "N/A",
-      followUp: "N/A",
-      excitement: 4,
-    },
-  ])
-
+  const [jobs, setJobs] = useState<Job[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [user, setUser] = useState<any>(null)
   const [selectedJobs, setSelectedJobs] = useState<number[]>([])
 
   const defaultColumns = columns.map((column) => getColumnId(column))
   const [selectedColumns, setSelectedColumns] = useState<string[]>(defaultColumns)
+
+  useEffect(() => {
+    // Check auth status and load jobs
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setUser(user)
+      if (user) {
+        loadJobs()
+      } else {
+        // Redirect to login if not authenticated
+        window.location.href = '/login'
+      }
+    })
+  }, [])
 
   useEffect(() => {
     const savedColumns = localStorage.getItem("selectedColumns")
@@ -277,8 +202,61 @@ export default function JobsPage() {
     localStorage.setItem("selectedColumns", JSON.stringify(selectedColumns))
   }, [selectedColumns])
 
+  async function loadJobs() {
+    try {
+      setLoading(true)
+      const data = await jobsService.list()
+      setJobs(data)
+    } catch (err) {
+      console.error('Error loading jobs:', err)
+      setError(err instanceof Error ? err.message : 'Failed to load jobs')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function handleUpdateJob(updatedJob: Job) {
+    try {
+      await jobsService.update(updatedJob.id, updatedJob)
+      setJobs(prev => prev.map(job => job.id === updatedJob.id ? updatedJob : job))
+    } catch (err) {
+      console.error('Error updating job:', err)
+      setError(err instanceof Error ? err.message : 'Failed to update job')
+    }
+  }
+
   function getColumnId(column: ColumnDef<Job>): string {
     return typeof column.id === "string" ? column.id : (column.accessorKey as string) || `column-${column.header}`
+  }
+
+  if (!user) {
+    return <div className="p-6">Redirecting to login...</div>
+  }
+
+  if (loading) {
+    return (
+      <div className="p-6">
+        <div className="animate-pulse space-y-4">
+          <div className="h-20 bg-gray-200 rounded"></div>
+          <div className="h-10 bg-gray-200 rounded w-1/4"></div>
+          <div className="space-y-3">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="h-12 bg-gray-200 rounded"></div>
+            ))}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="p-6">
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+          Error: {error}
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -339,7 +317,7 @@ export default function JobsPage() {
           <Button variant="outline" size="icon">
             <Menu className="h-4 w-4" />
           </Button>
-          <AddJobModal />
+          <AddJobModal onJobAdded={loadJobs} />
         </div>
       </div>
 
@@ -347,7 +325,7 @@ export default function JobsPage() {
         columns={columns.filter((column) => selectedColumns.includes(getColumnId(column)))}
         data={jobs}
         meta={{
-          updateData: setJobs,
+          updateData: handleUpdateJob,
         }}
       />
     </div>
