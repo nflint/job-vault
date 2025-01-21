@@ -5,6 +5,7 @@ import {
   flexRender,
   getCoreRowModel,
   useReactTable,
+  TableMeta,
 } from "@tanstack/react-table"
 
 import {
@@ -20,7 +21,13 @@ interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
   meta?: {
-    updateData: (updatedData: TData) => void
+    updateData: (updatedData: TData) => void | Promise<void>
+  }
+}
+
+declare module '@tanstack/table-core' {
+  interface TableMeta<TData> {
+    updateData: (updatedData: TData) => void | Promise<void>
   }
 }
 

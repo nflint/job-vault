@@ -48,7 +48,7 @@ export default function JobsPage() {
     }
   }
 
-  const columns: ColumnDef<Job>[] = [
+  const columns: ColumnDef<Job, unknown>[] = [
     {
       id: "select",
       header: ({ table }) => (
@@ -67,7 +67,8 @@ export default function JobsPage() {
       ),
     },
     {
-      accessorKey: "excitement",
+      id: "excitement",
+      accessorFn: row => row.excitement,
       header: "Excitement",
       cell: ({ row, table }) => (
         <InlineEdit
@@ -82,11 +83,13 @@ export default function JobsPage() {
       ),
     },
     {
-      accessorKey: "position",
+      id: "position",
+      accessorFn: row => row.position,
       header: "Job Position",
     },
     {
-      accessorKey: "company",
+      id: "company",
+      accessorFn: row => row.company,
       header: "Company",
       cell: ({ row, table }) => (
         <InlineEdit
@@ -99,7 +102,8 @@ export default function JobsPage() {
       ),
     },
     {
-      accessorKey: "max_salary",
+      id: "max_salary",
+      accessorFn: row => row.max_salary,
       header: "Max Salary",
       cell: ({ row, table }) => (
         <InlineEdit
@@ -112,7 +116,8 @@ export default function JobsPage() {
       ),
     },
     {
-      accessorKey: "location",
+      id: "location",
+      accessorFn: row => row.location,
       header: "Location",
       cell: ({ row, table }) => (
         <InlineEdit
@@ -125,7 +130,8 @@ export default function JobsPage() {
       ),
     },
     {
-      accessorKey: "status",
+      id: "status",
+      accessorFn: row => row.status,
       header: "Status",
       cell: ({ row, table }) => (
         <InlineEdit
@@ -138,11 +144,13 @@ export default function JobsPage() {
       ),
     },
     {
-      accessorKey: "date_saved",
+      id: "date_saved",
+      accessorFn: row => row.date_saved,
       header: "Date Saved",
     },
     {
-      accessorKey: "deadline",
+      id: "deadline",
+      accessorFn: row => row.deadline,
       header: "Deadline",
       cell: ({ row, table }) => (
         <InlineEdit
@@ -155,11 +163,13 @@ export default function JobsPage() {
       ),
     },
     {
-      accessorKey: "date_applied",
+      id: "date_applied",
+      accessorFn: row => row.date_applied,
       header: "Date Applied",
     },
     {
-      accessorKey: "follow_up",
+      id: "follow_up",
+      accessorFn: row => row.follow_up,
       header: "Follow up",
       cell: ({ row, table }) => (
         <InlineEdit
@@ -218,8 +228,8 @@ export default function JobsPage() {
     }
   }
 
-  function getColumnId(column: ColumnDef<Job>): string {
-    return typeof column.id === "string" ? column.id : (column.accessorKey as string) || `column-${column.header}`
+  function getColumnId(column: ColumnDef<Job, unknown>): string {
+    return column.id || 'column'
   }
 
   if (!user) {
