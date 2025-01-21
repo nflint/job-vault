@@ -1,6 +1,7 @@
 "use client"
 
 import { useMemo } from "react"
+import { cn } from "@/lib/utils"
 
 interface StatusStage {
   name: string
@@ -12,32 +13,44 @@ interface StatusPipelineProps {
 }
 
 export function StatusPipeline({ jobs }: StatusPipelineProps) {
-  const stages = useMemo(() => {
-    const statusCounts: Record<string, number> = {
-      Bookmarked: 0,
-      Applying: 0,
-      Applied: 0,
-      Interviewing: 0,
-      Offered: 0,
-      Rejected: 0,
-    }
+  const statusCounts = jobs.reduce((acc, job) => {
+    acc[job.status] = (acc[job.status] || 0) + 1
+    return acc
+  }, {} as Record<string, number>)
 
-    jobs.forEach((job) => {
-      const status = job.status.toLowerCase()
-      if (status in statusCounts) {
-        statusCounts[status]++
-      }
-    })
+  const statuses: string[] = ['saved', 'applied', 'interviewing', 'offered', 'rejected', 'accepted']
 
-    return Object.entries(statusCounts).map(([name, count]) => ({ name, count }))
-  }, [jobs])
+  function getProgressWidth(count: number): string {
+    if (jobs.length === 0) return 'w-0'
+    const percentage = (count / jobs.length) * 100
+    if (percentage <= 0) return 'w-0'
+    if (percentage <= 25) return 'w-1/4'
+    if (percentage <= 50) return 'w-1/2'
+    if (percentage <= 75) return 'w-3/4'
+    return 'w-full'
+  }
 
   return (
-    <div className="flex w-full border rounded-lg overflow-hidden divide-x">
-      {stages.map((stage, index) => (
-        <div key={stage.name} className={`flex-1 p-4 text-center ${index === 0 ? "bg-muted/10" : "bg-background"}`}>
-          <div className="font-bold">{stage.count}</div>
-          <div className="text-xs text-muted-foreground uppercase tracking-wider">{stage.name}</div>
+    <div className="grid grid-cols-2 gap-4 p-4 md:grid-cols-3 lg:grid-cols-6">
+      {statuses.map((status) => (
+        <div
+          key={status}
+          className="flex flex-col space-y-2 rounded-lg border bg-card/50 p-4 transition-colors hover:bg-card"
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-muted-foreground capitalize">{status}</span>
+            <span className="font-mono text-2xl font-bold text-primary">
+              {statusCounts[status] || 0}
+            </span>
+          </div>
+          <div className="h-2 rounded-full bg-muted overflow-hidden">
+            <div
+              className={cn(
+                "h-full rounded-full bg-primary transition-all",
+                getProgressWidth(statusCounts[status] || 0)
+              )}
+            />
+          </div>
         </div>
       ))}
     </div>

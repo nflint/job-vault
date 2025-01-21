@@ -253,74 +253,98 @@ export default function JobsPage() {
   }
 
   return (
-    <div className="space-y-6 p-6">
-      <StatusPipeline jobs={jobs} />
+    <div className="min-h-screen bg-gradient-to-b from-background to-background/95 dark:from-background dark:to-background/90">
+      <div className="mx-auto max-w-7xl space-y-6 p-6">
+        {/* Command-palette inspired header */}
+        <div className="rounded-lg border bg-card p-4 shadow-lg">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
+                <Menu className="h-4 w-4 text-primary" />
+              </div>
+              <h1 className="font-mono text-lg font-semibold tracking-tight">job_vault</h1>
+            </div>
+            <div className="flex items-center space-x-2">
+              <AddJobModal onJobAdded={loadJobs} />
+            </div>
+          </div>
+        </div>
 
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <Checkbox checked={selectedJobs.length > 0} onCheckedChange={() => setSelectedJobs([])} />
-            <span className="text-sm text-muted-foreground">{selectedJobs.length} selected</span>
+        {/* Status Pipeline with modern styling */}
+        <div className="rounded-lg border bg-card shadow-sm">
+          <StatusPipeline jobs={jobs} />
+        </div>
+
+        {/* Controls section */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 rounded-lg border bg-card/50 p-4">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <Checkbox 
+                checked={selectedJobs.length > 0} 
+                onCheckedChange={() => setSelectedJobs([])}
+                className="border-primary/50"
+              />
+              <span className="text-sm text-muted-foreground">
+                <span className="font-mono">{selectedJobs.length}</span> selected
+              </span>
+            </div>
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="gap-2 text-sm">
+                  <span className="font-mono">group_by:</span> none
+                  <ChevronDown className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem>none</DropdownMenuItem>
+                <DropdownMenuItem>status</DropdownMenuItem>
+                <DropdownMenuItem>company</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="gap-2">
-                Group by: None
-                <ChevronDown className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuItem>None</DropdownMenuItem>
-              <DropdownMenuItem>Status</DropdownMenuItem>
-              <DropdownMenuItem>Company</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <div className="flex items-center gap-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline">columns</Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-[200px]">
+                <DropdownMenuLabel>Toggle columns</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {columns.map((column) => {
+                  const columnId = getColumnId(column)
+                  return (
+                    <DropdownMenuCheckboxItem
+                      key={columnId}
+                      className="capitalize"
+                      checked={selectedColumns.includes(columnId)}
+                      onCheckedChange={(value) =>
+                        setSelectedColumns(
+                          value ? [...selectedColumns, columnId] : selectedColumns.filter((id) => id !== columnId),
+                        )
+                      }
+                    >
+                      {typeof column.header === "string" ? column.header : columnId}
+                    </DropdownMenuCheckboxItem>
+                  )
+                })}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="ml-auto">
-                Columns
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-[200px]">
-              <DropdownMenuLabel>Toggle columns</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              {columns.map((column) => {
-                const columnId = getColumnId(column)
-                return (
-                  <DropdownMenuCheckboxItem
-                    key={columnId}
-                    className="capitalize"
-                    checked={selectedColumns.includes(columnId)}
-                    onCheckedChange={(value) =>
-                      setSelectedColumns(
-                        value ? [...selectedColumns, columnId] : selectedColumns.filter((id) => id !== columnId),
-                      )
-                    }
-                  >
-                    {typeof column.header === "string" ? column.header : columnId}
-                  </DropdownMenuCheckboxItem>
-                )
-              })}
-            </DropdownMenuContent>
-          </DropdownMenu>
-          <Button variant="outline" size="icon">
-            <Menu className="h-4 w-4" />
-          </Button>
-          <AddJobModal onJobAdded={loadJobs} />
+        {/* Data Table with modern styling */}
+        <div className="rounded-lg border bg-card shadow-sm">
+          <DataTable
+            columns={columns.filter((column) => selectedColumns.includes(getColumnId(column)))}
+            data={jobs}
+            meta={{
+              updateData: handleUpdateJob,
+            }}
+          />
         </div>
       </div>
-
-      <DataTable
-        columns={columns.filter((column) => selectedColumns.includes(getColumnId(column)))}
-        data={jobs}
-        meta={{
-          updateData: handleUpdateJob,
-        }}
-      />
     </div>
   )
 }
