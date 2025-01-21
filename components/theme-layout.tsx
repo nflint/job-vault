@@ -23,31 +23,33 @@ export function ThemeLayout({ children }: { children: React.ReactNode }) {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
             <div className="flex items-center">
-              <h1 className="text-2xl font-bold text-foreground">Job Vault</h1>
+              <h1 className="text-2xl font-bold text-foreground">
+                <span className="font-mono">job_vault</span>
+              </h1>
               <nav className="ml-10 flex items-center space-x-4">
                 <Link 
                   href="/" 
-                  className="px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground"
+                  className="font-mono px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground"
                 >
-                  Home
+                  /home
                 </Link>
                 <Link 
                   href="/jobs" 
-                  className="px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground"
+                  className="font-mono px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground"
                 >
-                  Jobs
+                  /jobs
                 </Link>
                 <Link 
                   href="/resume" 
-                  className="px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground"
+                  className="font-mono px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground"
                 >
-                  Resume
+                  /resume
                 </Link>
                 <Link 
                   href="/account" 
-                  className="px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground"
+                  className="font-mono px-3 py-2 text-sm font-medium text-muted-foreground hover:text-foreground"
                 >
-                  Account
+                  /account
                 </Link>
               </nav>
             </div>

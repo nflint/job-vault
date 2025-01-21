@@ -84,6 +84,23 @@ body {
     --sidebar-ring: 217.2 91.2% 59.8%;
     transition: all var(--transition-duration) var(--transition-timing);
   }
+
+  /* Set default fonts */
+  html {
+    --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  }
+
+  /* Apply monospace font to specific elements */
+  .font-mono {
+    font-family: var(--font-mono);
+    font-feature-settings: "liga" 1, "calt" 1; /* Enable ligatures */
+  }
+
+  /* Ensure consistent monospace styling */
+  code, pre, .code {
+    font-family: var(--font-mono);
+    font-feature-settings: "liga" 1, "calt" 1;
+  }
 }
 
 @layer base {
@@ -97,7 +114,7 @@ body {
 
 /* Theme transition styles */
 :root {
-  --transition-duration: 800ms;
+  --transition-duration: 200ms;
   --transition-timing: cubic-bezier(0.16, 1, 0.3, 1);
 }
 

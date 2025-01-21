@@ -12,7 +12,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu"
-import { ChevronDown, Menu, Plus, Moon, Sun } from "lucide-react"
+import { ChevronDown, Menu, Plus, Moon, Sun, Trash2 } from "lucide-react"
 import { useTheme } from "next-themes"
 import { StatusPipeline } from "@/components/StatusPipeline"
 import { StarRating } from "@/components/StarRating"
@@ -24,6 +24,60 @@ import { InlineEdit } from "@/components/InlineEdit"
 import { jobsService } from "@/lib/jobs"
 import { supabase } from "@/lib/supabase"
 import type { Job, JobStatus } from "@/types"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+
+interface DeleteConfirmDialogProps {
+  jobId: number
+  jobTitle: string
+  onConfirm: () => void
+}
+
+function DeleteConfirmDialog({ jobId, jobTitle, onConfirm }: DeleteConfirmDialogProps) {
+  const [open, setOpen] = useState(false)
+  
+  const handleConfirm = () => {
+    onConfirm()
+    setOpen(false)
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8 text-destructive hover:bg-destructive/10 hover:text-destructive"
+        >
+          <Trash2 className="h-4 w-4" />
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Delete Job</DialogTitle>
+          <DialogDescription>
+            Are you sure you want to delete the job "{jobTitle}"? This action cannot be undone.
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <Button variant="outline" onClick={() => setOpen(false)}>
+            Cancel
+          </Button>
+          <Button variant="destructive" onClick={handleConfirm}>
+            Delete
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+}
 
 export default function JobsPage() {
   const { theme, setTheme } = useTheme()
@@ -50,6 +104,18 @@ export default function JobsPage() {
     }
   }
 
+  async function handleDeleteJob(jobId: number) {
+    try {
+      await jobsService.delete(jobId)
+      setJobs(prev => prev.filter(job => job.id !== jobId))
+    } catch (err) {
+      console.error('Error deleting job:', err)
+      const errorMessage = err instanceof Error ? err.message : 'Failed to delete job'
+      setError(errorMessage)
+      setTimeout(() => setError(null), 3000)
+    }
+  }
+
   const columns: ColumnDef<Job, any>[] = [
     {
       id: "select",
@@ -66,6 +132,20 @@ export default function JobsPage() {
           onCheckedChange={(value) => row.toggleSelected(!!value)}
           aria-label="Select row"
         />
+      ),
+    },
+    {
+      id: "actions",
+      header: "Actions",
+      cell: ({ row }) => (
+        <div className="flex items-center gap-2">
+          <EditJobModal job={row.original} onSave={handleUpdateJob} />
+          <DeleteConfirmDialog 
+            jobId={row.original.id}
+            jobTitle={`${row.original.position} at ${row.original.company}`}
+            onConfirm={() => handleDeleteJob(row.original.id)}
+          />
+        </div>
       ),
     },
     {
@@ -173,11 +253,6 @@ export default function JobsPage() {
         />
       ),
     },
-    {
-      id: "actions",
-      header: "Actions",
-      cell: ({ row }) => <EditJobModal job={row.original} onSave={handleUpdateJob} />,
-    },
   ]
 
   const defaultColumns = columns.map((column) => getColumnId(column))
@@ -266,19 +341,6 @@ export default function JobsPage() {
               </div>
               <h1 className="font-mono text-lg font-semibold tracking-tight">job_vault</h1>
             </div>
-            <div className="flex items-center space-x-2">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                className="h-8 w-8"
-              >
-                <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-                <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-                <span className="sr-only">Toggle theme</span>
-              </Button>
-              <AddJobModal onJobAdded={loadJobs} />
-            </div>
           </div>
         </div>
 
@@ -343,6 +405,7 @@ export default function JobsPage() {
                 })}
               </DropdownMenuContent>
             </DropdownMenu>
+            <AddJobModal onJobAdded={loadJobs} />
           </div>
         </div>
 

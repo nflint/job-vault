@@ -67,6 +67,9 @@ export const jobsService = {
       .eq('id', id)
       .eq('user_id', user.id) // Ensure users can only delete their own jobs
 
-    if (error) throw error
+    if (error) {
+      console.error('Supabase error:', error)
+      throw error
+    }
   }
 } 
