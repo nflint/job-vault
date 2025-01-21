@@ -1,79 +1,59 @@
-import React, { useState, useEffect, type ReactElement, cloneElement } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Pencil } from "lucide-react"
+"use client"
 
-interface InlineEditProps<T> {
-  value: T
-  onSave: (value: T) => void
-  children?: ReactElement
+import { useState, useRef, useEffect, ReactNode } from "react"
+import { Input } from "@/components/ui/input"
+
+interface InlineEditProps {
+  value: string | number
+  onSave: (value: string) => void
+  children?: ReactNode
 }
 
-export function InlineEdit<T>({ value: initialValue, onSave, children }: InlineEditProps<T>) {
+export function InlineEdit({ value, onSave, children }: InlineEditProps) {
   const [isEditing, setIsEditing] = useState(false)
-  const [value, setValue] = useState<T>(initialValue)
+  const [editValue, setEditValue] = useState(value.toString())
+  const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
-    setValue(initialValue)
-  }, [initialValue])
+    if (isEditing && inputRef.current) {
+      inputRef.current.focus()
+    }
+  }, [isEditing])
 
-  const handleSave = () => {
-    onSave(value)
-    setIsEditing(false)
-  }
-
-  const handleCancel = () => {
-    setValue(initialValue)
-    setIsEditing(false)
-  }
-
-  if (isEditing) {
-    if (children) {
-      return (
-        <div className="space-y-2">
-          {cloneElement(children, {
-            rating: value as number,
-            onRatingChange: setValue as (rating: number) => void,
-            editable: true,
-          })}
-          <div className="flex justify-end space-x-2">
-            <Button size="sm" onClick={handleSave}>
-              Save
-            </Button>
-            <Button size="sm" variant="outline" onClick={handleCancel}>
-              Cancel
-            </Button>
-          </div>
-        </div>
-      )
-    } else {
-      return (
-        <div className="space-y-2">
-          <Input value={value as string} onChange={(e) => setValue(e.target.value as T)} className="w-full" />
-          <div className="flex justify-end space-x-2">
-            <Button size="sm" onClick={handleSave}>
-              Save
-            </Button>
-            <Button size="sm" variant="outline" onClick={handleCancel}>
-              Cancel
-            </Button>
-          </div>
-        </div>
-      )
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      setIsEditing(false)
+      onSave(editValue)
+    } else if (e.key === "Escape") {
+      setIsEditing(false)
+      setEditValue(value.toString())
     }
   }
 
+  const handleBlur = () => {
+    setIsEditing(false)
+    setEditValue(value.toString())
+  }
+
+  if (isEditing) {
+    return (
+      <Input
+        ref={inputRef}
+        value={editValue}
+        onChange={(e) => setEditValue(e.target.value)}
+        onKeyDown={handleKeyDown}
+        onBlur={handleBlur}
+        className="w-full"
+      />
+    )
+  }
+
   return (
-    <div className="flex items-center justify-between group">
-      <span>{children ? children : (value as string)}</span>
-      <Button
-        size="sm"
-        variant="ghost"
-        onClick={() => setIsEditing(true)}
-        className="opacity-0 group-hover:opacity-100 transition-opacity"
-      >
-        <Pencil className="h-4 w-4" />
-      </Button>
+    <div
+      onClick={() => setIsEditing(true)}
+      className="cursor-pointer hover:bg-accent hover:text-accent-foreground p-1 rounded"
+    >
+      {children || value}
     </div>
   )
 }
