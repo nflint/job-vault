@@ -1,4 +1,7 @@
+"use client"
+
 import { Star } from "lucide-react"
+import { cn } from "@/lib/utils"
 
 interface StarRatingProps {
   rating: number
@@ -9,13 +12,15 @@ interface StarRatingProps {
 
 export function StarRating({ rating, maxRating = 5, onRatingChange, editable = false }: StarRatingProps) {
   return (
-    <div className="flex gap-0.5">
+    <div className="star-rating">
       {[...Array(maxRating)].map((_, index) => (
         <Star
           key={index}
-          className={`w-4 h-4 ${
-            index < rating ? "fill-primary stroke-primary" : "fill-muted stroke-muted-foreground"
-          } ${editable ? "cursor-pointer" : ""}`}
+          className={cn(
+            "star",
+            index < rating ? "star--filled" : "star--empty",
+            editable && "star--interactive"
+          )}
           onClick={() => {
             if (editable && onRatingChange) {
               onRatingChange(index + 1)

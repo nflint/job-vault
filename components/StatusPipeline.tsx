@@ -33,20 +33,17 @@ export function StatusPipeline({ jobs }: StatusPipelineProps) {
   return (
     <div className="grid grid-cols-2 gap-4 p-4 md:grid-cols-3 lg:grid-cols-6">
       {statuses.map((status) => (
-        <div
-          key={status}
-          className="flex flex-col space-y-2 rounded-lg border bg-card/50 p-4 transition-colors hover:bg-card"
-        >
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-muted-foreground capitalize">{status}</span>
-            <span className="font-mono text-2xl font-bold text-primary">
+        <div key={status} className="status-card">
+          <div className="status-header">
+            <span className="status-label">{status}</span>
+            <span className="status-value">
               {statusCounts[status] || 0}
             </span>
           </div>
-          <div className="h-2 rounded-full bg-muted overflow-hidden">
+          <div className="progress-bar">
             <div
               className={cn(
-                "h-full rounded-full bg-primary transition-all",
+                "progress-indicator",
                 getProgressWidth(statusCounts[status] || 0)
               )}
             />

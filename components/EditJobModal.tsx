@@ -14,7 +14,14 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Edit } from 'lucide-react'
-import type { Job } from '@/types'
+import type { Job, JobStatus } from '@/types'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 interface EditJobModalProps {
   job: Job
@@ -30,6 +37,10 @@ export function EditJobModal({ job, onSave }: EditJobModalProps) {
     setJobData(prev => ({ ...prev, [name]: value }))
   }
 
+  const handleStatusChange = (value: string) => {
+    setJobData(prev => ({ ...prev, status: value as JobStatus }))
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
@@ -43,7 +54,7 @@ export function EditJobModal({ job, onSave }: EditJobModalProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="icon">
+        <Button variant="ghost" size="icon" className="action-button !m-0 !p-0">
           <Edit className="h-4 w-4" />
         </Button>
       </DialogTrigger>
@@ -118,6 +129,26 @@ export function EditJobModal({ job, onSave }: EditJobModalProps) {
                 onChange={handleInputChange}
                 className="col-span-3"
               />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="status" className="text-right">
+                Status
+              </Label>
+              <div className="col-span-3">
+                <Select name="status" value={jobData.status} onValueChange={handleStatusChange}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="saved">Saved</SelectItem>
+                    <SelectItem value="applied">Applied</SelectItem>
+                    <SelectItem value="interviewing">Interviewing</SelectItem>
+                    <SelectItem value="offered">Offered</SelectItem>
+                    <SelectItem value="rejected">Rejected</SelectItem>
+                    <SelectItem value="accepted">Accepted</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
           <DialogFooter>
