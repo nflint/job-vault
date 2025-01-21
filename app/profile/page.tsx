@@ -5,8 +5,9 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { EyeIcon, EyeOffIcon } from "lucide-react"
+import { EyeIcon, EyeOffIcon, History, Briefcase, GraduationCap, ScrollText, Settings2 } from "lucide-react"
 import { supabase } from "@/lib/supabase"
+import Link from "next/link"
 
 export default function ProfilePage() {
   const [formData, setFormData] = useState({
@@ -136,212 +137,247 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="container mx-auto p-6">
-      <Card className="max-w-2xl mx-auto">
-        <CardHeader>
-          <CardTitle>Profile Settings</CardTitle>
-          <CardDescription>Update your personal information and profile settings here.</CardDescription>
-        </CardHeader>
-        <form onSubmit={handleSubmit}>
-          <CardContent className="space-y-4">
-            {/* Personal Information */}
-            <div className="space-y-2">
-              <h3 className="text-lg font-medium">Personal Information</h3>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="firstName">First Name</Label>
-                  <Input
-                    id="firstName"
-                    name="firstName"
-                    value={formData.firstName}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="lastName">Last Name</Label>
-                  <Input 
-                    id="lastName" 
-                    name="lastName" 
-                    value={formData.lastName} 
-                    onChange={handleInputChange} 
-                    required 
-                  />
-                </div>
-              </div>
+    <div className="min-h-screen gradient-bg">
+      <div className="mx-auto max-w-7xl space-y-6 p-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4 flex-wrap">
+            <h1 className="text-2xl font-mono font-semibold">profile</h1>
+            <div className="flex gap-2 flex-wrap">
+              <Link href="/profile/professional-history">
+                <Button variant="outline" className="flex items-center gap-2">
+                  <History className="h-4 w-4" />
+                  Professional History
+                </Button>
+              </Link>
+              <Link href="/profile/skills">
+                <Button variant="outline" className="flex items-center gap-2">
+                  <Briefcase className="h-4 w-4" />
+                  Skills
+                </Button>
+              </Link>
+              <Link href="/profile/resumes">
+                <Button variant="outline" className="flex items-center gap-2">
+                  <ScrollText className="h-4 w-4" />
+                  Resumes
+                </Button>
+              </Link>
+              <Link href="/profile/settings">
+                <Button variant="outline" className="flex items-center gap-2">
+                  <Settings2 className="h-4 w-4" />
+                  Settings
+                </Button>
+              </Link>
             </div>
+          </div>
+        </div>
 
-            {/* Professional Information */}
-            <div className="space-y-2">
-              <h3 className="text-lg font-medium">Professional Information</h3>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="jobTitle">Job Title</Label>
-                  <Input
-                    id="jobTitle"
-                    name="jobTitle"
-                    value={formData.jobTitle}
-                    onChange={handleInputChange}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="industry">Industry</Label>
-                  <Input
-                    id="industry"
-                    name="industry"
-                    value={formData.industry}
-                    onChange={handleInputChange}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="yearsExperience">Years of Experience</Label>
-                  <Input
-                    id="yearsExperience"
-                    name="yearsExperience"
-                    type="number"
-                    value={formData.yearsExperience}
-                    onChange={handleInputChange}
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Social Links */}
-            <div className="space-y-2">
-              <h3 className="text-lg font-medium">Social Links</h3>
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="linkedinUrl">LinkedIn URL</Label>
-                  <Input
-                    id="linkedinUrl"
-                    name="linkedinUrl"
-                    type="url"
-                    value={formData.linkedinUrl}
-                    onChange={handleInputChange}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="githubUrl">GitHub URL</Label>
-                  <Input
-                    id="githubUrl"
-                    name="githubUrl"
-                    type="url"
-                    value={formData.githubUrl}
-                    onChange={handleInputChange}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="portfolioUrl">Portfolio URL</Label>
-                  <Input
-                    id="portfolioUrl"
-                    name="portfolioUrl"
-                    type="url"
-                    value={formData.portfolioUrl}
-                    onChange={handleInputChange}
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Contact Information */}
-            <div className="space-y-2">
-              <h3 className="text-lg font-medium">Contact Information</h3>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    name="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="phone">Phone (optional)</Label>
-                  <Input
-                    id="phone"
-                    name="phone"
-                    type="tel"
-                    value={formData.phone}
-                    onChange={handleInputChange}
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Security */}
-            <div className="space-y-2">
-              <h3 className="text-lg font-medium">Security</h3>
+        {/* Main Content */}
+        <Card className="max-w-2xl">
+          <CardHeader>
+            <CardDescription>Update your personal information and profile settings here.</CardDescription>
+          </CardHeader>
+          <form onSubmit={handleSubmit}>
+            <CardContent className="space-y-4">
+              {/* Personal Information */}
               <div className="space-y-2">
-                <Label htmlFor="password">New Password (optional)</Label>
-                <div className="relative">
-                  <Input
-                    id="password"
-                    name="password"
-                    type={showPassword ? "text" : "password"}
-                    value={formData.password}
-                    onChange={handleInputChange}
-                    placeholder="Leave blank to keep current password"
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="absolute right-2 top-1/2 -translate-y-1/2"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    {showPassword ? <EyeOffIcon className="h-4 w-4" /> : <EyeIcon className="h-4 w-4" />}
-                  </Button>
+                <h3 className="text-lg font-medium">Personal Information</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="firstName">First Name</Label>
+                    <Input
+                      id="firstName"
+                      name="firstName"
+                      value={formData.firstName}
+                      onChange={handleInputChange}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="lastName">Last Name</Label>
+                    <Input 
+                      id="lastName" 
+                      name="lastName" 
+                      value={formData.lastName} 
+                      onChange={handleInputChange} 
+                      required 
+                    />
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Preferences */}
-            <div className="space-y-2">
-              <h3 className="text-lg font-medium">Preferences</h3>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="preferredCurrency">Preferred Currency</Label>
-                  <Input
-                    id="preferredCurrency"
-                    name="preferredCurrency"
-                    value={formData.preferredCurrency}
-                    onChange={handleInputChange}
-                  />
+              {/* Professional Information */}
+              <div className="space-y-2">
+                <h3 className="text-lg font-medium">Professional Information</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="jobTitle">Job Title</Label>
+                    <Input
+                      id="jobTitle"
+                      name="jobTitle"
+                      value={formData.jobTitle}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="industry">Industry</Label>
+                    <Input
+                      id="industry"
+                      name="industry"
+                      value={formData.industry}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="yearsExperience">Years of Experience</Label>
+                    <Input
+                      id="yearsExperience"
+                      name="yearsExperience"
+                      type="number"
+                      value={formData.yearsExperience}
+                      onChange={handleInputChange}
+                    />
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="timezone">Timezone</Label>
-                  <Input
-                    id="timezone"
-                    name="timezone"
-                    value={formData.timezone}
-                    onChange={handleInputChange}
-                  />
+              </div>
+
+              {/* Social Links */}
+              <div className="space-y-2">
+                <h3 className="text-lg font-medium">Social Links</h3>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="linkedinUrl">LinkedIn URL</Label>
+                    <Input
+                      id="linkedinUrl"
+                      name="linkedinUrl"
+                      type="url"
+                      value={formData.linkedinUrl}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="githubUrl">GitHub URL</Label>
+                    <Input
+                      id="githubUrl"
+                      name="githubUrl"
+                      type="url"
+                      value={formData.githubUrl}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="portfolioUrl">Portfolio URL</Label>
+                    <Input
+                      id="portfolioUrl"
+                      name="portfolioUrl"
+                      type="url"
+                      value={formData.portfolioUrl}
+                      onChange={handleInputChange}
+                    />
+                  </div>
                 </div>
               </div>
-            </div>
-          </CardContent>
-          <CardFooter className="flex flex-col items-start gap-4">
-            {error && (
-              <div className="w-full p-3 rounded-md bg-destructive/15 text-destructive text-sm">
-                {error}
+
+              {/* Contact Information */}
+              <div className="space-y-2">
+                <h3 className="text-lg font-medium">Contact Information</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email</Label>
+                    <Input
+                      id="email"
+                      name="email"
+                      type="email"
+                      value={formData.email}
+                      onChange={handleInputChange}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="phone">Phone (optional)</Label>
+                    <Input
+                      id="phone"
+                      name="phone"
+                      type="tel"
+                      value={formData.phone}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                </div>
               </div>
-            )}
-            {success && (
-              <div className="w-full p-3 rounded-md bg-green-100 text-green-800 text-sm dark:bg-green-900/50 dark:text-green-400">
-                {success}
+
+              {/* Security */}
+              <div className="space-y-2">
+                <h3 className="text-lg font-medium">Security</h3>
+                <div className="space-y-2">
+                  <Label htmlFor="password">New Password (optional)</Label>
+                  <div className="relative">
+                    <Input
+                      id="password"
+                      name="password"
+                      type={showPassword ? "text" : "password"}
+                      value={formData.password}
+                      onChange={handleInputChange}
+                      placeholder="Leave blank to keep current password"
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="absolute right-2 top-1/2 -translate-y-1/2"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? <EyeOffIcon className="h-4 w-4" /> : <EyeIcon className="h-4 w-4" />}
+                    </Button>
+                  </div>
+                </div>
               </div>
-            )}
-            <div className="w-full flex justify-end">
-              <Button type="submit" disabled={loading}>
-                {loading ? "Saving..." : "Save Changes"}
-              </Button>
-            </div>
-          </CardFooter>
-        </form>
-      </Card>
+
+              {/* Preferences */}
+              <div className="space-y-2">
+                <h3 className="text-lg font-medium">Preferences</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="preferredCurrency">Preferred Currency</Label>
+                    <Input
+                      id="preferredCurrency"
+                      name="preferredCurrency"
+                      value={formData.preferredCurrency}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="timezone">Timezone</Label>
+                    <Input
+                      id="timezone"
+                      name="timezone"
+                      value={formData.timezone}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+            <CardFooter className="flex flex-col items-start gap-4">
+              {error && (
+                <div className="w-full p-3 rounded-md bg-destructive/15 text-destructive text-sm">
+                  {error}
+                </div>
+              )}
+              {success && (
+                <div className="w-full p-3 rounded-md bg-green-100 text-green-800 text-sm dark:bg-green-900/50 dark:text-green-400">
+                  {success}
+                </div>
+              )}
+              <div className="w-full flex justify-end">
+                <Button type="submit" disabled={loading}>
+                  {loading ? "Saving..." : "Save Changes"}
+                </Button>
+              </div>
+            </CardFooter>
+          </form>
+        </Card>
+      </div>
     </div>
   )
 }

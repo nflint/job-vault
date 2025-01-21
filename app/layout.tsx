@@ -1,8 +1,8 @@
 import type { Metadata } from "next"
 import { Inter, JetBrains_Mono } from "next/font/google"
 import "./globals.css"
-import { ThemeProvider } from "@/components/theme-provider"
-import { ThemeLayout } from "@/components/theme-layout"
+import { ThemeProvider } from "next-themes"
+import { Navigation } from "@/components/Navigation"
 
 const inter = Inter({ subsets: ["latin"] })
 const jetbrainsMono = JetBrains_Mono({ 
@@ -29,7 +29,10 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange={false}
         >
-          <ThemeLayout>{children}</ThemeLayout>
+          <Navigation />
+          <main className="min-h-screen bg-background">
+            {children}
+          </main>
         </ThemeProvider>
       </body>
     </html>
