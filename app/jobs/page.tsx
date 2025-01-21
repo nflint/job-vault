@@ -16,7 +16,7 @@ import { ChevronDown, Menu, Plus } from "lucide-react"
 import { StatusPipeline } from "@/components/StatusPipeline"
 import { StarRating } from "@/components/StarRating"
 import { DataTable } from "@/components/ui/data-table"
-import type { ColumnDef } from "@tanstack/react-table"
+import type { ColumnDef, AccessorKeyColumnDef } from "@tanstack/react-table"
 import { AddJobModal } from "@/components/AddJobModal"
 import { EditJobModal } from "@/components/EditJobModal"
 import { InlineEdit } from "@/components/InlineEdit"
@@ -48,7 +48,7 @@ export default function JobsPage() {
     }
   }
 
-  const columns: ColumnDef<Job, unknown>[] = [
+  const columns: ColumnDef<Job, any>[] = [
     {
       id: "select",
       header: ({ table }) => (
@@ -67,8 +67,7 @@ export default function JobsPage() {
       ),
     },
     {
-      id: "excitement",
-      accessorFn: row => row.excitement,
+      accessorKey: "excitement",
       header: "Excitement",
       cell: ({ row, table }) => (
         <InlineEdit
@@ -83,13 +82,11 @@ export default function JobsPage() {
       ),
     },
     {
-      id: "position",
-      accessorFn: row => row.position,
+      accessorKey: "position",
       header: "Job Position",
     },
     {
-      id: "company",
-      accessorFn: row => row.company,
+      accessorKey: "company",
       header: "Company",
       cell: ({ row, table }) => (
         <InlineEdit
@@ -102,8 +99,7 @@ export default function JobsPage() {
       ),
     },
     {
-      id: "max_salary",
-      accessorFn: row => row.max_salary,
+      accessorKey: "max_salary",
       header: "Max Salary",
       cell: ({ row, table }) => (
         <InlineEdit
@@ -116,8 +112,7 @@ export default function JobsPage() {
       ),
     },
     {
-      id: "location",
-      accessorFn: row => row.location,
+      accessorKey: "location",
       header: "Location",
       cell: ({ row, table }) => (
         <InlineEdit
@@ -130,8 +125,7 @@ export default function JobsPage() {
       ),
     },
     {
-      id: "status",
-      accessorFn: row => row.status,
+      accessorKey: "status",
       header: "Status",
       cell: ({ row, table }) => (
         <InlineEdit
@@ -144,13 +138,11 @@ export default function JobsPage() {
       ),
     },
     {
-      id: "date_saved",
-      accessorFn: row => row.date_saved,
+      accessorKey: "date_saved",
       header: "Date Saved",
     },
     {
-      id: "deadline",
-      accessorFn: row => row.deadline,
+      accessorKey: "deadline",
       header: "Deadline",
       cell: ({ row, table }) => (
         <InlineEdit
@@ -163,13 +155,11 @@ export default function JobsPage() {
       ),
     },
     {
-      id: "date_applied",
-      accessorFn: row => row.date_applied,
+      accessorKey: "date_applied",
       header: "Date Applied",
     },
     {
-      id: "follow_up",
-      accessorFn: row => row.follow_up,
+      accessorKey: "follow_up",
       header: "Follow up",
       cell: ({ row, table }) => (
         <InlineEdit
@@ -228,8 +218,8 @@ export default function JobsPage() {
     }
   }
 
-  function getColumnId(column: ColumnDef<Job, unknown>): string {
-    return column.id || 'column'
+  function getColumnId(column: ColumnDef<Job, any> | AccessorKeyColumnDef<Job, any>): string {
+    return column.id || (column as AccessorKeyColumnDef<Job, any>).accessorKey || 'column'
   }
 
   if (!user) {
