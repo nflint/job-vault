@@ -1,23 +1,129 @@
 # Profile Structure
 
-## Route Organization
+## Route & UI Organization
 
 ```
 /profile
-├── /                               # Profile overview/dashboard
-├── /professional-history           # Professional history management
-│   ├── /experience                # Work experience entries
-│   ├── /education                 # Educational background
-│   ├── /projects                  # Project showcase
-│   └── /certifications            # Certifications and credentials
-├── /skills                         # Skills management
-└── /settings                       # Profile settings and preferences
-    ├── /account                    # Account settings (existing)
-    ├── /appearance                 # Theme preferences (existing)
-    ├── /notifications             # Notification preferences
-    ├── /privacy                   # Privacy controls
-    └── /integrations              # LinkedIn and other integrations
+├── /                               # Profile Overview Dashboard (Single Page)
+│   ├── Quick Stats
+│   ├── Completion Status
+│   ├── Recent Updates
+│   └── Quick Actions
+│
+├── /professional-history           # Professional History (Tabbed Interface)
+│   ├── /experience                # Tab: Work Experience
+│   ├── /education                 # Tab: Education
+│   ├── /projects                  # Tab: Projects
+│   └── /certifications            # Tab: Certifications
+│
+├── /skills                         # Skills Dashboard (Single Page)
+│   ├── Skill Matrix
+│   ├── Category View
+│   └── Proficiency Management
+│
+└── /settings                       # Settings (Tabbed Interface)
+    ├── /account                    # Tab: Account Settings
+    ├── /appearance                # Tab: Appearance
+    ├── /notifications             # Tab: Notifications
+    ├── /privacy                   # Tab: Privacy
+    └── /integrations              # Tab: Integrations
 ```
+
+## Page Layouts
+
+### 1. Profile Overview (`/profile`)
+**Single Page Dashboard Layout**
+- Profile completion progress bar
+- Quick action buttons
+  - Add new experience
+  - Update skills
+  - Generate resume
+- Recent activity feed
+- Profile visibility status
+- LinkedIn connection status
+- Quick stats summary
+
+### 2. Professional History (`/profile/professional-history`)
+**Tabbed Interface with Shared Timeline**
+- Persistent timeline view across tabs
+- Tab navigation:
+  1. **Experience Tab**
+     - Work history timeline
+     - Company details
+     - Role descriptions
+     - Achievements
+  
+  2. **Education Tab**
+     - Education timeline
+     - Degrees and certifications
+     - Academic achievements
+  
+  3. **Projects Tab**
+     - Project portfolio grid
+     - Technical details
+     - Results showcase
+  
+  4. **Certifications Tab**
+     - Certification timeline
+     - License management
+     - Renewal tracking
+
+### 3. Skills Management (`/profile/skills`)
+**Single Page Grid Layout**
+- Skill matrix visualization
+- Category-based organization
+- Proficiency level indicators
+- Search and filter options
+- Quick edit capabilities
+- Skill trend analysis
+
+### 4. Settings (`/profile/settings`)
+**Tabbed Interface**
+- Standard settings layout
+- Tab-based navigation
+- Consistent form patterns
+- Save/cancel actions
+- Real-time validation
+
+## Shared UI Elements
+
+### Navigation
+- Breadcrumb navigation
+- Section tabs where applicable
+- Quick navigation sidebar
+- Mobile-responsive menu
+
+### Interactive Elements
+- Rich text editors
+- Drag-and-drop interfaces
+- In-line editing
+- Auto-save functionality
+- Version history access
+
+### Data Display
+- Timeline visualizations
+- Progress indicators
+- Achievement metrics
+- Skill proficiency charts
+- Status indicators
+
+## Mobile Considerations
+- Collapsible sections
+- Bottom navigation for tabs
+- Responsive grids
+- Touch-friendly interactions
+- Simplified views for complex data
+
+---
+## Implementation Notes
+- Use Next.js App Router for navigation
+- Implement loading states for each section
+- Add error boundaries per route
+- Use ShadcnUI tabs component for consistency
+- Maintain state separately for each tab
+- Implement optimistic updates
+- Use skeleton loaders for initial loads
+- Add scroll position restoration
 
 ## Feature Organization
 
