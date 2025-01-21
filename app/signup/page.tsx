@@ -1,22 +1,35 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Eye, EyeOff } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 
 export default function SignUpPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const [isResetMode, setIsResetMode] = useState(false)
+  const [isResetMode, setIsResetMode] = useState(searchParams.get('reset') === 'true')
   const [message, setMessage] = useState<{ type: 'error' | 'success', text: string } | null>(null)
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  useEffect(() => {
+    // Check if user is already authenticated
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        router.push('/jobs')
+      } else {
+        setLoading(false)
+      }
+    })
+  }, [router])
 
   async function handleSignUp(e: React.FormEvent) {
     e.preventDefault()
@@ -25,7 +38,7 @@ export default function SignUpPage() {
       return
     }
     
-    setLoading(true)
+    setIsSubmitting(true)
     try {
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -48,13 +61,13 @@ export default function SignUpPage() {
         text: err instanceof Error ? err.message : 'Failed to sign up'
       })
     } finally {
-      setLoading(false)
+      setIsSubmitting(false)
     }
   }
 
   async function handlePasswordReset(e: React.FormEvent) {
     e.preventDefault()
-    setLoading(true)
+    setIsSubmitting(true)
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/auth/callback`,
@@ -71,8 +84,13 @@ export default function SignUpPage() {
         text: err instanceof Error ? err.message : 'Failed to send reset instructions'
       })
     } finally {
-      setLoading(false)
+      setIsSubmitting(false)
     }
+  }
+
+  // Show loading state while checking auth
+  if (loading) {
+    return null
   }
 
   return (
@@ -82,24 +100,10 @@ export default function SignUpPage() {
           <h2 className="mt-6 text-center text-3xl font-bold mb-4 bg-gradient-to-r from-purple-500 via-pink-500 to-purple-400 bg-clip-text text-transparent">
             {isResetMode ? 'Reset Password' : 'Create your account'}
           </h2>
-          <p className="mt-2 text-center text-sm text-muted-foreground">
-            {isResetMode ? (
-              <Button
-                variant="ghost"
-                onClick={() => setIsResetMode(false)}
-                className="font-medium hover:text-purple-500"
-              >
-                Back to sign up
-              </Button>
-            ) : (
-              <>
-                Already have an account?{' '}
-                <Link href="/login" className="font-medium text-purple-500 hover:text-pink-500">
-                  Sign in
-                </Link>
-              </>
-            )}
+          <p className="text-center text-sm text-muted-foreground mb-2">
+            Start tracking your job search journey today - completely free, forever! We believe everyone deserves access to great tools.
           </p>
+          
         </div>
 
         <form className="mt-8 space-y-6" onSubmit={isResetMode ? handlePasswordReset : handleSignUp}>
@@ -120,6 +124,7 @@ export default function SignUpPage() {
                 placeholder="Email address"
               />
             </div>
+            
             {!isResetMode && (
               <>
                 <div className="relative">
@@ -191,16 +196,22 @@ export default function SignUpPage() {
           <div>
             <Button
               type="submit"
-              disabled={loading}
+              disabled={isSubmitting}
               size="lg"
               className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white border-0"
             >
-              {loading ? 'Processing...' : isResetMode ? 'Send reset instructions' : 'Sign up'}
+              {isSubmitting ? 'Processing...' : isResetMode ? 'Send reset instructions' : 'Sign up'}
             </Button>
           </div>
 
           {!isResetMode && (
             <div className="text-center">
+              <p className="mb-2">
+                Already have an account?{' '}
+                <Link href="/login" className="font-medium text-purple-500 hover:text-pink-500">
+                  Sign in
+                </Link>
+              </p>
               <Button
                 type="button"
                 variant="ghost"
