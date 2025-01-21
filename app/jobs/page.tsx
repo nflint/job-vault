@@ -303,7 +303,7 @@ export default function JobsPage() {
       <div className="mx-auto max-w-7xl space-y-6 p-6">
         {/* Header */}
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-mono font-semibold">jobs</h1>
+          <h1 className="text-2xl font-semibold">Jobs</h1>
           <AddJobModal onJobAdded={loadJobs} />
         </div>
 

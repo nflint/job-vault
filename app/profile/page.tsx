@@ -142,7 +142,7 @@ export default function ProfilePage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4 flex-wrap">
-            <h1 className="text-2xl font-mono font-semibold">profile</h1>
+            <h1 className="text-2xl font-semibold">Profile</h1>
             <div className="flex gap-2 flex-wrap">
               <Link href="/profile/professional-history">
                 <Button variant="outline" className="flex items-center gap-2">
