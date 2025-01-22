@@ -7,7 +7,8 @@ import type {
   Skill,
   Achievement,
   AchievementMetric,
-  SkillContext
+  SkillContext,
+  Certification
 } from '@/types'
 import { supabase as defaultSupabase } from './supabase'
 import type { SupabaseClient } from '@supabase/supabase-js'
@@ -375,4 +376,105 @@ export async function deleteAchievementMetric(id: string) {
     .eq('id', id)
 
   if (error) throw error
+}
+
+// Certifications
+export async function getCertifications(historyId: string): Promise<Certification[]> {
+  console.log('Fetching certifications for history:', historyId)
+  
+  // Log authentication status
+  const { data: { user } } = await supabase.auth.getUser()
+  console.log('Current user:', user?.id)
+  
+  // First verify the professional history exists
+  const { data: history, error: historyError } = await supabase
+    .from('professional_histories')
+    .select('*')
+    .eq('id', historyId)
+    .single()
+    
+  console.log('Professional history check:', { history, error: historyError })
+
+  const { data, error } = await supabase
+    .from("certifications")
+    .select("*")
+    .eq("history_id", historyId)
+    .order("issue_date", { ascending: false })
+
+  if (error) {
+    console.error("Error fetching certifications:", error)
+    throw error
+  }
+
+  console.log('Raw certifications data:', data)
+  
+  // Check if data is properly structured
+  if (data) {
+    data.forEach((cert, index) => {
+      console.log(`Certification ${index + 1}:`, {
+        id: cert.id,
+        name: cert.name,
+        issuer: cert.issuer,
+        history_id: cert.history_id
+      })
+    })
+  }
+
+  return data || []
+}
+
+export async function createCertification(
+  certification: Omit<Certification, "id" | "created_at" | "updated_at">,
+  client: SupabaseClient = defaultSupabase
+): Promise<Certification> {
+  const { data, error } = await client
+    .from("certifications")
+    .insert([certification])
+    .select()
+    .single()
+
+  if (error) {
+    console.error("Error creating certification:", error)
+    throw error
+  }
+
+  return data
+}
+
+export async function updateCertification(
+  id: string,
+  certification: Partial<Certification>,
+  client: SupabaseClient = defaultSupabase
+): Promise<Certification> {
+  const { data, error } = await client
+    .from("certifications")
+    .update({
+      ...certification,
+      updated_at: new Date().toISOString()
+    })
+    .eq("id", id)
+    .select()
+    .single()
+
+  if (error) {
+    console.error("Error updating certification:", error)
+    throw error
+  }
+
+  return data
+}
+
+export async function deleteCertification(
+  id: string,
+  client: SupabaseClient = defaultSupabase
+): Promise<void> {
+  const { error } = await client
+    .from("certifications")
+    .delete()
+    .eq("id", id)
+
+  if (error) {
+    console.error("Error deleting certification:", error)
+    throw error
+  }
 } 

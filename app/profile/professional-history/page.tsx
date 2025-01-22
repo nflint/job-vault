@@ -11,19 +11,23 @@ import { WorkExperienceTimeline } from "@/components/WorkExperienceTimeline"
 import { AddWorkExperienceModal } from "@/components/AddWorkExperienceModal"
 import { EducationTimeline } from "@/components/EducationTimeline"
 import { AddEducationModal } from "@/components/AddEducationModal"
-import { getProfessionalHistory, createProfessionalHistory, getWorkExperiences, getEducation, getProjects } from "@/lib/professional-history"
-import type { ProfessionalHistory, WorkExperience, Education, Project } from "@/types"
+import { getProfessionalHistory, createProfessionalHistory, getWorkExperiences, getEducation, getProjects, getCertifications } from "@/lib/professional-history"
+import type { ProfessionalHistory, WorkExperience, Education, Project, Certification } from "@/types"
 import { ProjectTimeline } from "@/components/ProjectTimeline"
 import { AddProjectModal } from "@/components/AddProjectModal"
+import { CertificationTimeline } from "@/components/CertificationTimeline"
+
+console.log("=== Professional History Page Rendering ===")
 
 export default function ProfessionalHistoryPage() {
-  const [activeTab, setActiveTab] = useState("experience")
+  const [activeTab, setActiveTab] = useState("certifications")
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [history, setHistory] = useState<ProfessionalHistory | null>(null)
   const [experiences, setExperiences] = useState<WorkExperience[]>([])
   const [education, setEducation] = useState<Education[]>([])
   const [projects, setProjects] = useState<Project[]>([])
+  const [certifications, setCertifications] = useState<Certification[]>([])
   const [isAddWorkModalOpen, setIsAddWorkModalOpen] = useState(false)
   const [isAddEducationModalOpen, setIsAddEducationModalOpen] = useState(false)
   const [isAddProjectModalOpen, setIsAddProjectModalOpen] = useState(false)
@@ -33,6 +37,7 @@ export default function ProfessionalHistoryPage() {
   }, [])
 
   async function loadData() {
+    console.log("Starting loadData")
     try {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) {
@@ -48,65 +53,41 @@ export default function ProfessionalHistoryPage() {
         console.log('Attempting to get professional history for user:', user.id)
         userHistory = await getProfessionalHistory(user.id)
         console.log('Found existing professional history:', userHistory)
-      } catch (err) {
-        console.log('No existing history found, creating new one...')
-        try {
+      } catch (e) {
+        if (e instanceof Error && e.message === 'No professional history found') {
+          console.log('Creating new professional history for user:', user.id)
           userHistory = await createProfessionalHistory(user.id)
           console.log('Created new professional history:', userHistory)
-        } catch (createErr) {
-          console.error('Failed to create professional history:', createErr)
-          throw createErr
+        } else {
+          throw e
         }
       }
-      
-      if (!userHistory) {
-        console.error('No professional history after get/create')
-        throw new Error('Failed to get or create professional history')
-      }
-      
+
       setHistory(userHistory)
 
-      // Load work experiences
-      try {
-        const workExperiences = await getWorkExperiences(userHistory.id)
-        console.log('Work Experiences loaded:', workExperiences)
-        setExperiences(workExperiences)
-      } catch (err) {
-        console.error('Failed to load work experiences:', err)
-      }
+      // Load all data
+      const [experiencesData, educationData, projectsData, certificationsData] = await Promise.all([
+        getWorkExperiences(userHistory.id),
+        getEducation(userHistory.id),
+        getProjects(userHistory.id),
+        getCertifications(userHistory.id)
+      ])
 
-      // Load education
-      try {
-        const educationEntries = await getEducation(userHistory.id)
-        console.log('Education entries loaded:', educationEntries)
-        setEducation(educationEntries)
-      } catch (err) {
-        console.error('Failed to load education:', err)
-      }
+      console.log('Loaded data:', {
+        experiences: experiencesData,
+        education: educationData,
+        projects: projectsData,
+        certifications: certificationsData
+      })
 
-      // Load projects
-      try {
-        console.log('Loading projects for history:', userHistory.id)
-        const projectEntries = await getProjects(userHistory.id)
-        console.log('Project entries loaded:', projectEntries)
-        if (projectEntries.length === 0) {
-          console.log('No projects found')
-        } else {
-          console.log('Found projects:', projectEntries.map(p => ({
-            id: p.id,
-            name: p.name,
-            history_id: p.history_id
-          })))
-        }
-        setProjects(projectEntries)
-      } catch (err) {
-        console.error('Failed to load projects:', err)
-      }
-
+      setExperiences(experiencesData)
+      setEducation(educationData)
+      setProjects(projectsData)
+      setCertifications(certificationsData)
       setLoading(false)
-    } catch (err) {
-      console.error('Error in loadData:', err)
-      setError(err instanceof Error ? err.message : 'Failed to load profile data')
+    } catch (e) {
+      console.error('Error loading data:', e)
+      setError(e instanceof Error ? e.message : 'An unknown error occurred')
       setLoading(false)
     }
   }
@@ -213,11 +194,11 @@ export default function ProfessionalHistoryPage() {
             </TabsContent>
 
             <TabsContent value="certifications" className="mt-6">
-              <div className="space-y-4">
-                <div className="text-muted-foreground text-center py-8">
-                  No certifications added yet. Click the button above to add your first entry.
-                </div>
-              </div>
+              <CertificationTimeline
+                historyId={history?.id || ''}
+                certifications={certifications}
+                onUpdate={loadData}
+              />
             </TabsContent>
           </Tabs>
         </CardContent>

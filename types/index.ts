@@ -142,4 +142,18 @@ export interface ImpactMetric {
   unit: string
   description: string
   confidence_score: number
+}
+
+export interface Certification {
+  id: string
+  history_id: string
+  source: 'linkedin_import' | 'manual'
+  name: string
+  issuer: string
+  issue_date: string
+  expiration_date?: string | null
+  credential_id?: string | null
+  credential_url?: string | null
+  created_at: string
+  updated_at: string
 } 
