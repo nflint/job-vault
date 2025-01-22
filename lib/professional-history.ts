@@ -12,24 +12,54 @@ import type {
 
 // Professional History
 export async function getProfessionalHistory(userId: string) {
+  console.log('Getting professional history for user:', userId)
   const { data, error } = await supabase
     .from('professional_histories')
     .select('*')
     .eq('user_id', userId)
     .single()
 
-  if (error) throw error
+  if (error) {
+    console.error('Error getting professional history:', error)
+    if (error.code === 'PGRST116') {
+      // No rows returned - this is expected for new users
+      throw new Error('No professional history found')
+    }
+    throw error
+  }
+
+  if (!data) {
+    console.error('No data returned from professional history query')
+    throw new Error('No professional history found')
+  }
+
+  console.log('Found professional history:', data)
   return data as ProfessionalHistory
 }
 
 export async function createProfessionalHistory(userId: string) {
+  console.log('Creating professional history for user:', userId)
   const { data, error } = await supabase
     .from('professional_histories')
-    .insert([{ user_id: userId, is_complete: false }])
+    .insert([{ 
+      user_id: userId, 
+      is_complete: false,
+      last_updated: new Date().toISOString()
+    }])
     .select()
     .single()
 
-  if (error) throw error
+  if (error) {
+    console.error('Error creating professional history:', error)
+    throw error
+  }
+
+  if (!data) {
+    console.error('No data returned from create professional history')
+    throw new Error('Failed to create professional history')
+  }
+
+  console.log('Created professional history:', data)
   return data as ProfessionalHistory
 }
 
@@ -84,94 +114,161 @@ export async function deleteWorkExperience(id: string) {
 }
 
 // Education
-export async function getEducation(historyId: string) {
+export async function getEducation(historyId: string): Promise<Education[]> {
+  console.log('Fetching education for history:', historyId)
   const { data, error } = await supabase
-    .from('education')
-    .select('*')
-    .eq('history_id', historyId)
-    .order('start_date', { ascending: false })
+    .from("education")
+    .select("*")
+    .eq("history_id", historyId)
+    .order("start_date", { ascending: false })
 
-  if (error) throw error
-  return data as Education[]
+  if (error) {
+    console.error("Error fetching education:", error)
+    throw error
+  }
+
+  console.log('Education data:', data)
+  return data || []
 }
 
-export async function createEducation(education: Omit<Education, 'id' | 'created_at' | 'updated_at'>) {
+export async function createEducation(education: Omit<Education, "id" | "created_at">): Promise<Education> {
   const { data, error } = await supabase
-    .from('education')
+    .from("education")
     .insert([education])
     .select()
     .single()
 
-  if (error) throw error
-  return data as Education
+  if (error) {
+    console.error("Error creating education:", error)
+    throw error
+  }
+
+  return data
 }
 
-export async function updateEducation(id: string, education: Partial<Education>) {
+export async function updateEducation(id: string, education: Partial<Education>): Promise<Education> {
   const { data, error } = await supabase
-    .from('education')
+    .from("education")
     .update(education)
-    .eq('id', id)
+    .eq("id", id)
     .select()
     .single()
 
-  if (error) throw error
-  return data as Education
+  if (error) {
+    console.error("Error updating education:", error)
+    throw error
+  }
+
+  return data
 }
 
-export async function deleteEducation(id: string) {
+export async function deleteEducation(id: string): Promise<void> {
   const { error } = await supabase
-    .from('education')
+    .from("education")
     .delete()
-    .eq('id', id)
+    .eq("id", id)
 
-  if (error) throw error
+  if (error) {
+    console.error("Error deleting education:", error)
+    throw error
+  }
 }
 
 // Projects
-export async function getProjects(historyId: string) {
+export async function getProjects(historyId: string): Promise<Project[]> {
+  console.log('Fetching projects for history:', historyId)
+  
+  // Log authentication status
+  const { data: { user } } = await supabase.auth.getUser()
+  console.log('Current user:', user?.id)
+  
+  // First verify the professional history exists
+  const { data: history, error: historyError } = await supabase
+    .from('professional_histories')
+    .select('*')
+    .eq('id', historyId)
+    .single()
+    
+  console.log('Professional history check:', { history, error: historyError })
+
   const { data, error } = await supabase
-    .from('projects')
+    .from("projects")
     .select(`
       *,
       project_metrics (*)
     `)
-    .eq('history_id', historyId)
-    .order('start_date', { ascending: false })
+    .eq("history_id", historyId)
+    .order("start_date", { ascending: false })
 
-  if (error) throw error
-  return data as Project[]
+  if (error) {
+    console.error("Error fetching projects:", error)
+    throw error
+  }
+
+  console.log('Raw projects data:', data)
+  
+  // Check if data is properly structured
+  if (data) {
+    data.forEach((project, index) => {
+      console.log(`Project ${index + 1}:`, {
+        id: project.id,
+        name: project.name,
+        technologies: project.technologies,
+        history_id: project.history_id
+      })
+    })
+  }
+
+  return data || []
 }
 
-export async function createProject(project: Omit<Project, 'id' | 'created_at' | 'updated_at'>) {
+export async function createProject(project: Omit<Project, "id" | "created_at" | "updated_at">): Promise<Project> {
   const { data, error } = await supabase
-    .from('projects')
-    .insert([project])
+    .from("projects")
+    .insert([{
+      ...project,
+      updated_at: new Date().toISOString()
+    }])
     .select()
     .single()
 
-  if (error) throw error
-  return data as Project
+  if (error) {
+    console.error("Error creating project:", error)
+    throw error
+  }
+
+  return data
 }
 
-export async function updateProject(id: string, project: Partial<Project>) {
+export async function updateProject(id: string, project: Partial<Project>): Promise<Project> {
   const { data, error } = await supabase
-    .from('projects')
-    .update(project)
-    .eq('id', id)
+    .from("projects")
+    .update({
+      ...project,
+      updated_at: new Date().toISOString()
+    })
+    .eq("id", id)
     .select()
     .single()
 
-  if (error) throw error
-  return data as Project
+  if (error) {
+    console.error("Error updating project:", error)
+    throw error
+  }
+
+  return data
 }
 
-export async function deleteProject(id: string) {
+export async function deleteProject(id: string): Promise<void> {
   const { error } = await supabase
-    .from('projects')
+    .from("projects")
     .delete()
-    .eq('id', id)
+    .eq("id", id)
 
-  if (error) throw error
+  if (error) {
+    console.error("Error deleting project:", error)
+    throw error
+  }
 }
 
 // Skills

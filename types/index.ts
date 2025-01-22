@@ -92,6 +92,7 @@ export interface Project {
   history_id: string
   education_id?: string
   experience_id?: string
+  source: 'linkedin_import' | 'manual'
   name: string
   description?: string
   technologies: string[]
