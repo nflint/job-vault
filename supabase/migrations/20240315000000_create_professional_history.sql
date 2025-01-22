@@ -77,6 +77,7 @@ create table public.projects (
     history_id uuid references public.professional_histories on delete cascade not null,
     education_id uuid references public.education on delete set null,
     experience_id uuid references public.work_experiences on delete set null,
+    source text check (source in ('linkedin_import', 'manual')) not null default 'manual',
     name text not null,
     description text,
     technologies text[],
@@ -203,6 +204,72 @@ using (history_id in (
 
 create policy "Users can delete their work experiences"
 on public.work_experiences for delete
+to authenticated
+using (history_id in (
+    select id from public.professional_histories
+    where user_id = auth.uid()
+));
+
+-- Add RLS policies for education table
+create policy "Users can view their education"
+on public.education for select
+to authenticated
+using (history_id in (
+    select id from public.professional_histories
+    where user_id = auth.uid()
+));
+
+create policy "Users can insert their education"
+on public.education for insert
+to authenticated
+with check (history_id in (
+    select id from public.professional_histories
+    where user_id = auth.uid()
+));
+
+create policy "Users can update their education"
+on public.education for update
+to authenticated
+using (history_id in (
+    select id from public.professional_histories
+    where user_id = auth.uid()
+));
+
+create policy "Users can delete their education"
+on public.education for delete
+to authenticated
+using (history_id in (
+    select id from public.professional_histories
+    where user_id = auth.uid()
+));
+
+-- Add RLS policies for projects table
+create policy "Users can view their projects"
+on public.projects for select
+to authenticated
+using (history_id in (
+    select id from public.professional_histories
+    where user_id = auth.uid()
+));
+
+create policy "Users can insert their projects"
+on public.projects for insert
+to authenticated
+with check (history_id in (
+    select id from public.professional_histories
+    where user_id = auth.uid()
+));
+
+create policy "Users can update their projects"
+on public.projects for update
+to authenticated
+using (history_id in (
+    select id from public.professional_histories
+    where user_id = auth.uid()
+));
+
+create policy "Users can delete their projects"
+on public.projects for delete
 to authenticated
 using (history_id in (
     select id from public.professional_histories
