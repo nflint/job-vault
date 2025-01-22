@@ -2,31 +2,51 @@
 
 import { useState, useEffect } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Plus } from "lucide-react"
-import { supabase } from "@/lib/supabase"
 import { Briefcase, GraduationCap, FolderKanban, Award } from "lucide-react"
+import { supabase } from "@/lib/supabase"
+import { WorkExperienceTimeline } from "@/components/WorkExperienceTimeline"
+import { getProfessionalHistory, createProfessionalHistory, getWorkExperiences } from "@/lib/professional-history"
+import type { ProfessionalHistory, WorkExperience } from "@/types"
 
 export default function ProfessionalHistoryPage() {
   const [activeTab, setActiveTab] = useState("experience")
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [history, setHistory] = useState<ProfessionalHistory | null>(null)
+  const [experiences, setExperiences] = useState<WorkExperience[]>([])
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false)
 
   useEffect(() => {
-    checkAuth()
+    loadData()
   }, [])
 
-  async function checkAuth() {
+  async function loadData() {
     try {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) {
         window.location.href = '/login'
         return
       }
+
+      // Get or create professional history
+      let userHistory: ProfessionalHistory
+      try {
+        userHistory = await getProfessionalHistory(user.id)
+      } catch (err) {
+        userHistory = await createProfessionalHistory(user.id)
+      }
+      setHistory(userHistory)
+
+      // Load work experiences
+      const workExperiences = await getWorkExperiences(userHistory.id)
+      setExperiences(workExperiences)
+
       setLoading(false)
     } catch (err) {
-      console.error('Error checking auth:', err)
+      console.error('Error loading data:', err)
       setError('Failed to load profile data')
       setLoading(false)
     }
@@ -48,6 +68,16 @@ export default function ProfessionalHistoryPage() {
       <div className="container mx-auto p-6">
         <div className="bg-destructive/15 text-destructive p-4 rounded-md">
           {error}
+        </div>
+      </div>
+    )
+  }
+
+  if (!history) {
+    return (
+      <div className="container mx-auto p-6">
+        <div className="bg-destructive/15 text-destructive p-4 rounded-md">
+          Failed to load professional history
         </div>
       </div>
     )
@@ -86,19 +116,11 @@ export default function ProfessionalHistoryPage() {
             </TabsList>
 
             <TabsContent value="experience" className="mt-6">
-              <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <h2 className="text-xl font-semibold">Work Experience</h2>
-                  <Button variant="outline" size="sm">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Experience
-                  </Button>
-                </div>
-                {/* Experience content will be loaded here */}
-                <div className="text-muted-foreground text-center py-8">
-                  No work experience added yet. Click the button above to add your first entry.
-                </div>
-              </div>
+              <WorkExperienceTimeline
+                historyId={history.id}
+                experiences={experiences}
+                onUpdate={loadData}
+              />
             </TabsContent>
 
             <TabsContent value="education" className="mt-6">
