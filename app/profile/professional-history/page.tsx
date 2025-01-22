@@ -8,6 +8,7 @@ import { Plus } from "lucide-react"
 import { Briefcase, GraduationCap, FolderKanban, Award } from "lucide-react"
 import { supabase } from "@/lib/supabase"
 import { WorkExperienceTimeline } from "@/components/WorkExperienceTimeline"
+import { AddWorkExperienceModal } from "@/components/AddWorkExperienceModal"
 import { getProfessionalHistory, createProfessionalHistory, getWorkExperiences } from "@/lib/professional-history"
 import type { ProfessionalHistory, WorkExperience } from "@/types"
 
@@ -87,7 +88,7 @@ export default function ProfessionalHistoryPage() {
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Professional History</h1>
-        <Button variant="outline">
+        <Button variant="outline" onClick={() => setIsAddModalOpen(true)}>
           <Plus className="h-4 w-4 mr-2" />
           Add Entry
         </Button>
@@ -166,13 +167,20 @@ export default function ProfessionalHistoryPage() {
                 </div>
                 {/* Certifications content will be loaded here */}
                 <div className="text-muted-foreground text-center py-8">
-                  No certifications added yet. Click the button above to add your first certification.
+                  No certifications added yet. Click the button above to add your first entry.
                 </div>
               </div>
             </TabsContent>
           </Tabs>
         </CardContent>
       </Card>
+
+      <AddWorkExperienceModal
+        open={isAddModalOpen}
+        onOpenChange={setIsAddModalOpen}
+        historyId={history?.id}
+        onSuccess={loadData}
+      />
     </div>
   )
 } 

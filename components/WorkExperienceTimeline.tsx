@@ -168,10 +168,10 @@ export function WorkExperienceTimeline({ historyId, experiences, onUpdate }: Pro
       <AddWorkExperienceModal
         historyId={historyId}
         experience={selectedExperience || undefined}
-        isOpen={isAddModalOpen}
-        onClose={() => {
-          setIsAddModalOpen(false)
-          setSelectedExperience(null)
+        open={isAddModalOpen}
+        onOpenChange={(open) => {
+          setIsAddModalOpen(open)
+          if (!open) setSelectedExperience(null)
         }}
         onSuccess={() => {
           onUpdate()

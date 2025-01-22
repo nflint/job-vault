@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
@@ -50,12 +50,12 @@ type FormData = z.infer<typeof formSchema>
 interface Props {
   historyId: string
   experience?: WorkExperience
-  isOpen: boolean
-  onClose: () => void
+  open: boolean
+  onOpenChange: (open: boolean) => void
   onSuccess: () => void
 }
 
-export function AddWorkExperienceModal({ historyId, experience, isOpen, onClose, onSuccess }: Props) {
+export function AddWorkExperienceModal({ historyId, experience, open, onOpenChange, onSuccess }: Props) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const isEditing = !!experience
 
@@ -73,6 +73,33 @@ export function AddWorkExperienceModal({ historyId, experience, isOpen, onClose,
     },
   })
 
+  // Reset form when experience changes
+  useEffect(() => {
+    if (experience) {
+      form.reset({
+        company: experience.company,
+        title: experience.title,
+        location: experience.location || '',
+        employment_type: experience.employment_type || '',
+        start_date: experience.start_date ? new Date(experience.start_date) : undefined,
+        end_date: experience.end_date ? new Date(experience.end_date) : undefined,
+        description: experience.description || '',
+        technologies: experience.technologies || [],
+      })
+    } else {
+      form.reset({
+        company: '',
+        title: '',
+        location: '',
+        employment_type: '',
+        start_date: undefined,
+        end_date: undefined,
+        description: '',
+        technologies: [],
+      })
+    }
+  }, [experience, form])
+
   async function onSubmit(data: FormData) {
     try {
       setIsSubmitting(true)
@@ -80,7 +107,9 @@ export function AddWorkExperienceModal({ historyId, experience, isOpen, onClose,
       const formattedData = {
         ...data,
         start_date: format(data.start_date, 'yyyy-MM-dd'),
-        end_date: data.end_date ? format(data.end_date, 'yyyy-MM-dd') : null,
+        end_date: data.end_date ? format(data.end_date, 'yyyy-MM-dd') : undefined,
+        description: data.description || '',
+        technologies: data.technologies || [],
         history_id: historyId,
         source: 'manual' as const,
       }
@@ -92,7 +121,7 @@ export function AddWorkExperienceModal({ historyId, experience, isOpen, onClose,
       }
 
       onSuccess()
-      onClose()
+      onOpenChange(false)
     } catch (error) {
       console.error('Failed to save work experience:', error)
     } finally {
@@ -101,7 +130,7 @@ export function AddWorkExperienceModal({ historyId, experience, isOpen, onClose,
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle>{isEditing ? 'Edit Work Experience' : 'Add Work Experience'}</DialogTitle>
@@ -284,7 +313,7 @@ export function AddWorkExperienceModal({ historyId, experience, isOpen, onClose,
               <Button
                 type="button"
                 variant="outline"
-                onClick={onClose}
+                onClick={() => onOpenChange(false)}
                 disabled={isSubmitting}
               >
                 Cancel
