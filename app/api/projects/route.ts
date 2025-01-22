@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { createProject } from "@/lib/professional-history"
-import { supabase } from "@/lib/supabase"
+import { createClient } from '@supabase/supabase-js'
 
 // Helper function to get error message based on environment
 function getErrorMessage(error: any, detailedMessage: string) {
@@ -21,16 +21,23 @@ export async function POST(request: Request) {
       )
     }
 
-    // Create authenticated Supabase client
-    const supabaseClient = supabase.auth.setSession({
-      access_token: authHeader.replace('Bearer ', ''),
-      refresh_token: '',
-    })
-
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
+    // Create Supabase client with auth token
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        global: {
+          headers: {
+            Authorization: authHeader
+          }
+        }
+      }
+    )
+    
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
       return new NextResponse(
-        getErrorMessage(null, "Unauthorized - Invalid token"),
+        getErrorMessage(authError, "Unauthorized - Invalid token"),
         { status: 401 }
       )
     }
@@ -45,7 +52,7 @@ export async function POST(request: Request) {
       start_date: body.start_date || null,
       end_date: body.end_date || null,
       source: 'manual',
-    })
+    }, supabase)
 
     return NextResponse.json(project)
   } catch (error) {

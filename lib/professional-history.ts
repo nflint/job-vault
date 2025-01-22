@@ -9,6 +9,8 @@ import type {
   AchievementMetric,
   SkillContext
 } from '@/types'
+import { supabase as defaultSupabase } from './supabase'
+import type { SupabaseClient } from '@supabase/supabase-js'
 
 // Professional History
 export async function getProfessionalHistory(userId: string) {
@@ -222,8 +224,11 @@ export async function getProjects(historyId: string): Promise<Project[]> {
   return data || []
 }
 
-export async function createProject(project: Omit<Project, "id" | "created_at" | "updated_at">): Promise<Project> {
-  const { data, error } = await supabase
+export async function createProject(
+  project: Omit<Project, "id" | "created_at" | "updated_at">,
+  client: SupabaseClient = defaultSupabase
+): Promise<Project> {
+  const { data, error } = await client
     .from("projects")
     .insert([{
       ...project,
