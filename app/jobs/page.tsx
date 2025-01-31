@@ -224,12 +224,12 @@ export default function JobsPage() {
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="saved">Saved</SelectItem>
-            <SelectItem value="applied">Applied</SelectItem>
-            <SelectItem value="interviewing">Interviewing</SelectItem>
-            <SelectItem value="offered">Offered</SelectItem>
-            <SelectItem value="rejected">Rejected</SelectItem>
-            <SelectItem value="accepted">Accepted</SelectItem>
+            <SelectItem value="BOOKMARKED">Bookmarked</SelectItem>
+            <SelectItem value="APPLYING">Applying</SelectItem>
+            <SelectItem value="APPLIED">Applied</SelectItem>
+            <SelectItem value="INTERVIEWING">Interviewing</SelectItem>
+            <SelectItem value="NEGOTIATING">Negotiating</SelectItem>
+            <SelectItem value="ACCEPTED">Accepted</SelectItem>
           </SelectContent>
         </Select>
       ),
