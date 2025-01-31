@@ -22,6 +22,7 @@ interface Job {
   status: JobStatus
   rating: number
   date_saved: string
+  description?: string
   created_at: string
   updated_at: string
 }

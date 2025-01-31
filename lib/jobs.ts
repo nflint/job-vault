@@ -3,31 +3,30 @@ import type { Job } from '@/types'
 
 export const jobsService = {
   async list() {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) throw new Error('Not authenticated')
-
     const { data, error } = await supabase
       .from('jobs')
       .select('*')
-      .eq('user_id', user.id)
-      .order('date_saved', { ascending: false })
+      .order('created_at', { ascending: false })
 
     if (error) throw error
     return data as Job[]
   },
 
-  async create(job: Omit<Job, 'id' | 'user_id' | 'created_at' | 'updated_at' | 'date_saved'>) {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) throw new Error('Not authenticated')
-
-    const now = new Date().toISOString()
+  async get(id: number) {
     const { data, error } = await supabase
       .from('jobs')
-      .insert([{ 
-        ...job, 
-        user_id: user.id,
-        date_saved: now
-      }])
+      .select('*')
+      .eq('id', id)
+      .single()
+
+    if (error) throw error
+    return data as Job
+  },
+
+  async create(job: Omit<Job, 'id' | 'user_id' | 'created_at' | 'updated_at' | 'date_saved'>) {
+    const { data, error } = await supabase
+      .from('jobs')
+      .insert([{ ...job, date_saved: new Date().toISOString() }])
       .select()
       .single()
 
@@ -36,45 +35,23 @@ export const jobsService = {
   },
 
   async update(id: number, updates: Partial<Omit<Job, 'id' | 'user_id' | 'created_at' | 'updated_at'>>) {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) throw new Error('Not authenticated')
-
-    console.log('Updating job with ID:', id)
-    console.log('Update payload:', updates)
-
-    // Remove any undefined values from updates
-    const cleanUpdates = Object.fromEntries(
-      Object.entries(updates).filter(([_, v]) => v !== undefined)
-    )
-
     const { data, error } = await supabase
       .from('jobs')
-      .update(cleanUpdates)
+      .update(updates)
       .eq('id', id)
-      .eq('user_id', user.id) // Ensure users can only update their own jobs
       .select()
       .single()
 
-    if (error) {
-      console.error('Supabase error:', error)
-      throw error
-    }
+    if (error) throw error
     return data as Job
   },
 
   async delete(id: number) {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) throw new Error('Not authenticated')
-
     const { error } = await supabase
       .from('jobs')
       .delete()
       .eq('id', id)
-      .eq('user_id', user.id) // Ensure users can only delete their own jobs
 
-    if (error) {
-      console.error('Supabase error:', error)
-      throw error
-    }
+    if (error) throw error
   }
 } 

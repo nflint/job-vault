@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { Copy, Trash2 } from "lucide-react"
+import { Copy, Trash2, ExternalLink } from "lucide-react"
 import { StatusPipeline } from "@/components/StatusPipeline"
 import { StarRating } from "@/components/StarRating"
 import { DataTable } from "@/components/ui/data-table"
@@ -29,6 +29,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import Link from "next/link"
 
 interface DeleteConfirmDialogProps {
   jobId: number
@@ -122,7 +123,7 @@ export default function JobsPage() {
             className="action-button"
             onClick={() => {
               const jobCopy = { ...row.original }
-              delete jobCopy.id // Remove the ID so it creates a new record
+              delete jobCopy.id
               delete jobCopy.user_id
               delete jobCopy.created_at
               delete jobCopy.updated_at
@@ -132,6 +133,15 @@ export default function JobsPage() {
           >
             <Copy className="h-4 w-4" />
           </Button>
+          <Link href={`/jobs/${row.original.id}`}>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="action-button"
+            >
+              <ExternalLink className="h-4 w-4" />
+            </Button>
+          </Link>
           <EditJobModal job={row.original} onSave={handleUpdateJob} />
           <DeleteConfirmDialog 
             jobId={row.original.id}

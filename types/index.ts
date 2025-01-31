@@ -11,6 +11,7 @@ export interface Job {
   deadline: string | null
   date_applied: string | null
   follow_up: string | null
+  description?: string
   created_at: string
   updated_at: string
 }
