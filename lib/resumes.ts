@@ -5,34 +5,40 @@ class ResumeService {
   async list(): Promise<Resume[]> {
     const { data, error } = await supabase
       .from('resumes')
-      .select('*')
+      .select('id, name, description, template, font_family, font_size, line_spacing, margin_size, ranking, user_id, created_at, updated_at')
       .order('updated_at', { ascending: false })
 
-    if (error) throw error
+    if (error) {
+      console.error('Error listing resumes:', error)
+      throw error
+    }
     return data
   }
 
-  async get(id: string): Promise<Resume & { sections: (ResumeSection & { items: ResumeItem[] })[] }> {
+  async get(id: string): Promise<Resume & { sections: ResumeSection[] }> {
     // Get resume
     const { data: resume, error: resumeError } = await supabase
       .from('resumes')
-      .select('*')
+      .select('id, name, description, template, font_family, font_size, line_spacing, margin_size, ranking, user_id, created_at, updated_at')
       .eq('id', id)
       .single()
 
-    if (resumeError) throw resumeError
+    if (resumeError) {
+      console.error('Error getting resume:', resumeError)
+      throw resumeError
+    }
 
-    // Get sections with items
+    // Get sections
     const { data: sections, error: sectionsError } = await supabase
       .from('resume_sections')
-      .select(`
-        *,
-        items:resume_items(*)
-      `)
+      .select('*')
       .eq('resume_id', id)
       .order('order_index')
 
-    if (sectionsError) throw sectionsError
+    if (sectionsError) {
+      console.error('Error getting resume sections:', sectionsError)
+      throw sectionsError
+    }
 
     return {
       ...resume,
@@ -41,13 +47,43 @@ class ResumeService {
   }
 
   async create(resume: Omit<Resume, 'id' | 'user_id' | 'created_at' | 'updated_at'>): Promise<Resume> {
+    // Get current user
+    const { data: { user }, error: userError } = await supabase.auth.getUser()
+    if (userError) {
+      console.error('Error getting user:', userError)
+      throw userError
+    }
+    if (!user) {
+      throw new Error('User not authenticated')
+    }
+
+    // Log the exact data being sent
+    const resumeData = {
+      ...resume,
+      user_id: user.id
+    }
+    console.log('Sending resume data to Supabase:', resumeData)
+    console.log('Data types:', {
+      font_size: typeof resumeData.font_size,
+      line_spacing: typeof resumeData.line_spacing,
+      margin_size: typeof resumeData.margin_size,
+      ranking: typeof resumeData.ranking
+    })
+
+    // Create resume
     const { data, error } = await supabase
       .from('resumes')
-      .insert([resume])
-      .select()
-      .single()
+      .insert([resumeData])
+      .select('id, name, description, template, font_family, font_size, line_spacing, margin_size, ranking, user_id, created_at, updated_at')
+      .maybeSingle()
 
-    if (error) throw error
+    if (error) {
+      console.error('Error creating resume:', error)
+      throw error
+    }
+    if (!data) {
+      throw new Error('No resume data returned after creation')
+    }
     return data
   }
 
@@ -78,9 +114,15 @@ class ResumeService {
       .from('resume_sections')
       .insert([section])
       .select()
-      .single()
+      .maybeSingle()
 
-    if (error) throw error
+    if (error) {
+      console.error('Error creating section:', error)
+      throw error
+    }
+    if (!data) {
+      throw new Error('No section data returned after creation')
+    }
     return data
   }
 

@@ -163,7 +163,6 @@ export interface Certification {
 export interface Resume {
   id: string
   user_id: string
-  history_id: string
   name: string
   description?: string
   template: string

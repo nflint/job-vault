@@ -12,6 +12,7 @@ import { Plus, GripVertical, Trash2, Download } from "lucide-react"
 import { resumeService } from "@/lib/resumes"
 import type { Resume, ResumeSection, ResumeItem, ResumeSectionType } from "@/types"
 import { ResumePreview } from "@/components/resume/ResumePreview"
+import { supabase } from "@/lib/supabase"
 
 const SECTION_TYPES = [
   { value: "summary", label: "Professional Summary" },
@@ -56,7 +57,6 @@ export default function ResumeEditorPage({ params }: { params: { id: string } })
   const [resume, setResume] = useState<Resume & { sections: ResumeSection[] }>({
     id: "",
     user_id: "",
-    history_id: "",
     name: "",
     description: "",
     template: "modern",
@@ -233,6 +233,7 @@ export default function ResumeEditorPage({ params }: { params: { id: string } })
                 variant="outline"
                 onClick={async () => {
                   try {
+                    // Create export record
                     const exportData = await resumeService.createExport({
                       resume_id: resume.id,
                       format: "pdf",
@@ -240,8 +241,36 @@ export default function ResumeEditorPage({ params }: { params: { id: string } })
                       version: 1
                     })
                     
-                    // Download the file
-                    window.open(`/api/resume/export/${exportData.id}`, '_blank')
+                    // Get current session
+                    const { data: { session } } = await supabase.auth.getSession()
+                    if (!session?.access_token) {
+                      throw new Error('No valid session found')
+                    }
+                    
+                    // Open in new tab with auth header
+                    const exportUrl = `/api/resume/export/${exportData.id}`
+                    const exportWindow = window.open('', '_blank')
+                    if (exportWindow) {
+                      exportWindow.document.write('Loading PDF...')
+                      
+                      // Make authenticated request
+                      const response = await fetch(exportUrl, {
+                        headers: {
+                          'Authorization': `Bearer ${session.access_token}`
+                        }
+                      })
+                      
+                      if (!response.ok) {
+                        throw new Error('Failed to generate PDF')
+                      }
+                      
+                      // Get the PDF blob
+                      const blob = await response.blob()
+                      const url = URL.createObjectURL(blob)
+                      
+                      // Navigate to PDF
+                      exportWindow.location.href = url
+                    }
                   } catch (err) {
                     console.error('Error exporting resume:', err)
                     setError(err instanceof Error ? err.message : 'Failed to export resume')

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import puppeteer from "puppeteer"
 import { supabase } from "@/lib/supabase"
+import { createClient } from '@supabase/supabase-js'
 import type { Resume, ResumeSection, ResumeExport } from "@/types"
 
 export async function GET(
@@ -8,6 +9,28 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
+    // Get auth token from request header
+    const authHeader = request.headers.get('Authorization')
+    if (!authHeader) {
+      return NextResponse.json(
+        { error: 'Unauthorized - No token provided' },
+        { status: 401 }
+      )
+    }
+
+    // Create Supabase client with auth token
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        global: {
+          headers: {
+            Authorization: authHeader
+          }
+        }
+      }
+    )
+
     // Get export record
     const { data: exportData, error: exportError } = await supabase
       .from('resume_exports')
@@ -16,6 +39,7 @@ export async function GET(
       .single()
 
     if (exportError) {
+      console.error('Export error:', exportError)
       return NextResponse.json(
         { error: 'Export not found' },
         { status: 404 }
