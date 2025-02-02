@@ -82,9 +82,9 @@ export async function GET(
           <style>
             body {
               font-family: ${resume.font_family}, system-ui, sans-serif;
-              font-size: ${resume.font_size === "sm" ? "14px" : resume.font_size === "lg" ? "18px" : "16px"};
-              line-height: ${resume.line_spacing === "tight" ? "1.25" : resume.line_spacing === "relaxed" ? "1.75" : "1.5"};
-              margin: ${resume.margin_size === "sm" ? "1rem" : resume.margin_size === "lg" ? "3rem" : "2rem"};
+              font-size: ${resume.font_size}px;
+              line-height: ${resume.line_spacing};
+              margin: ${resume.margin_size}rem;
               color: #1a1a1a;
             }
             h1 {

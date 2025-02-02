@@ -167,9 +167,9 @@ export interface Resume {
   description?: string
   template: string
   font_family: string
-  font_size: string
-  line_spacing: string
-  margin_size: string
+  font_size: number
+  line_spacing: number
+  margin_size: number
   ranking: number
   created_at: string
   updated_at: string

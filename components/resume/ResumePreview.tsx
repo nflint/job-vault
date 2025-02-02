@@ -16,9 +16,9 @@ interface ResumePreviewProps {
 export function ResumePreview({ resume }: ResumePreviewProps) {
   const containerStyle = useMemo(() => ({
     fontFamily: fontFamilyMap[resume.font_family as keyof typeof fontFamilyMap] || 'var(--font-inter)',
-    fontSize: resume.font_size === "sm" ? "0.875rem" : resume.font_size === "lg" ? "1.125rem" : "1rem",
-    lineHeight: resume.line_spacing === "tight" ? "1.25" : resume.line_spacing === "relaxed" ? "1.75" : "1.5",
-    padding: resume.margin_size === "sm" ? "1rem" : resume.margin_size === "lg" ? "3rem" : "2rem",
+    fontSize: `${resume.font_size}px`,
+    lineHeight: resume.line_spacing,
+    padding: `${resume.margin_size}rem`,
   }), [resume.font_family, resume.font_size, resume.line_spacing, resume.margin_size])
 
   return (

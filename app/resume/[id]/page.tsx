@@ -32,24 +32,6 @@ const FONT_FAMILIES = [
   { value: "montserrat", label: "Montserrat" }
 ]
 
-const FONT_SIZES = [
-  { value: "sm", label: "Small" },
-  { value: "base", label: "Medium" },
-  { value: "lg", label: "Large" }
-]
-
-const LINE_SPACINGS = [
-  { value: "tight", label: "Tight" },
-  { value: "normal", label: "Normal" },
-  { value: "relaxed", label: "Relaxed" }
-]
-
-const MARGIN_SIZES = [
-  { value: "sm", label: "Small" },
-  { value: "md", label: "Medium" },
-  { value: "lg", label: "Large" }
-]
-
 export default function ResumeEditorPage({ params }: { params: { id: string } }) {
   const router = useRouter()
   const isNew = params.id === "new"
@@ -61,9 +43,9 @@ export default function ResumeEditorPage({ params }: { params: { id: string } })
     description: "",
     template: "modern",
     font_family: "inter",
-    font_size: "base",
-    line_spacing: "normal",
-    margin_size: "md",
+    font_size: 16,
+    line_spacing: 1.5,
+    margin_size: 2,
     ranking: 0,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
@@ -363,18 +345,21 @@ export default function ResumeEditorPage({ params }: { params: { id: string } })
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Font Size</label>
                     <Select
-                      value={resume.font_size}
-                      onValueChange={value => setResume(prev => ({ ...prev, font_size: value }))}
+                      value={resume.font_size.toString()}
+                      onValueChange={(value) => setResume(prev => ({
+                        ...prev,
+                        font_size: Number(value)
+                      }))}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Select size" />
+                        <SelectValue placeholder="Font Size" />
                       </SelectTrigger>
                       <SelectContent>
-                        {FONT_SIZES.map(size => (
-                          <SelectItem key={size.value} value={size.value}>
-                            {size.label}
-                          </SelectItem>
-                        ))}
+                        <SelectItem value="10">Extra Small (10px)</SelectItem>
+                        <SelectItem value="12">Small (12px)</SelectItem>
+                        <SelectItem value="14">Medium (14px)</SelectItem>
+                        <SelectItem value="16">Large (16px)</SelectItem>
+                        <SelectItem value="18">Extra Large (18px)</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -382,18 +367,19 @@ export default function ResumeEditorPage({ params }: { params: { id: string } })
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Line Spacing</label>
                     <Select
-                      value={resume.line_spacing}
-                      onValueChange={value => setResume(prev => ({ ...prev, line_spacing: value }))}
+                      value={resume.line_spacing.toString()}
+                      onValueChange={(value) => setResume(prev => ({
+                        ...prev,
+                        line_spacing: Number(value)
+                      }))}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Select spacing" />
+                        <SelectValue placeholder="Line Spacing" />
                       </SelectTrigger>
                       <SelectContent>
-                        {LINE_SPACINGS.map(spacing => (
-                          <SelectItem key={spacing.value} value={spacing.value}>
-                            {spacing.label}
-                          </SelectItem>
-                        ))}
+                        <SelectItem value="1.25">Tight (1.25)</SelectItem>
+                        <SelectItem value="1.5">Normal (1.5)</SelectItem>
+                        <SelectItem value="1.75">Relaxed (1.75)</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -401,18 +387,19 @@ export default function ResumeEditorPage({ params }: { params: { id: string } })
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Margin Size</label>
                     <Select
-                      value={resume.margin_size}
-                      onValueChange={value => setResume(prev => ({ ...prev, margin_size: value }))}
+                      value={resume.margin_size.toString()}
+                      onValueChange={(value) => setResume(prev => ({
+                        ...prev,
+                        margin_size: Number(value)
+                      }))}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Select margin" />
+                        <SelectValue placeholder="Margin Size" />
                       </SelectTrigger>
                       <SelectContent>
-                        {MARGIN_SIZES.map(margin => (
-                          <SelectItem key={margin.value} value={margin.value}>
-                            {margin.label}
-                          </SelectItem>
-                        ))}
+                        <SelectItem value="1">Small (1rem)</SelectItem>
+                        <SelectItem value="2">Medium (2rem)</SelectItem>
+                        <SelectItem value="3">Large (3rem)</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
