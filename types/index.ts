@@ -157,4 +157,56 @@ export interface Certification {
   credential_url?: string | null
   created_at: string
   updated_at: string
+}
+
+// Resume Management Types
+export interface Resume {
+  id: string
+  user_id: string
+  history_id: string
+  name: string
+  description?: string
+  template: string
+  font_family: string
+  font_size: string
+  line_spacing: string
+  margin_size: string
+  ranking: number
+  created_at: string
+  updated_at: string
+}
+
+export type ResumeSectionType = 'summary' | 'experience' | 'education' | 'skills' | 'projects' | 'certifications' | 'custom'
+
+export interface ResumeSection {
+  id: string
+  resume_id: string
+  type: ResumeSectionType
+  title: string
+  content?: string
+  order_index: number
+  created_at: string
+  updated_at: string
+}
+
+export type ResumeItemType = 'experience' | 'education' | 'skill' | 'project' | 'certification'
+
+export interface ResumeItem {
+  id: string
+  section_id: string
+  item_type: ResumeItemType
+  item_id: string
+  custom_description?: string
+  order_index: number
+  created_at: string
+  updated_at: string
+}
+
+export interface ResumeExport {
+  id: string
+  resume_id: string
+  format: 'pdf' | 'docx'
+  file_path: string
+  version: number
+  created_at: string
 } 

@@ -1,13 +1,15 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { Copy, Trash2 } from "lucide-react"
+import { Copy, Trash2, FileDown } from "lucide-react"
 import { DataTable } from "@/components/ui/data-table"
 import type { ColumnDef } from "@tanstack/react-table"
 import { StarRating } from "@/components/StarRating"
 import { InlineEdit } from "@/components/InlineEdit"
-import { AddResumeModal } from "@/components/AddResumeModal"
+import { resumeService } from "@/lib/resumes"
+import { supabase } from "@/lib/supabase"
+import type { Resume } from "@/types"
 import {
   Dialog,
   DialogContent,
@@ -17,100 +19,15 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-
-// Test data
-const TEST_RESUMES = [
-  {
-    id: 1,
-    title: "Full Stack Developer Resume - FAANG Focus",
-    version: "2.3",
-    ranking: 5,
-    date_created: "2024-02-15T08:00:00Z",
-    last_modified: "2024-03-13T14:30:00Z",
-    user_id: "test-user-1"
-  },
-  {
-    id: 2,
-    title: "Senior Cloud Architect CV",
-    version: "1.5",
-    ranking: 4,
-    date_created: "2024-01-30T10:15:00Z",
-    last_modified: "2024-03-10T09:45:00Z",
-    user_id: "test-user-1"
-  },
-  {
-    id: 3,
-    title: "Data Science & ML Engineer Resume",
-    version: "3.0",
-    ranking: 5,
-    date_created: "2024-02-25T15:20:00Z",
-    last_modified: "2024-03-14T11:20:00Z",
-    user_id: "test-user-1"
-  },
-  {
-    id: 4,
-    title: "DevOps Specialist Resume - Kubernetes",
-    version: "2.0",
-    ranking: 3,
-    date_created: "2024-01-15T11:30:00Z",
-    last_modified: "2024-02-28T16:40:00Z",
-    user_id: "test-user-1"
-  },
-  {
-    id: 5,
-    title: "Frontend Developer - React Expert",
-    version: "1.8",
-    ranking: 4,
-    date_created: "2024-02-20T09:45:00Z",
-    last_modified: "2024-03-12T13:15:00Z",
-    user_id: "test-user-1"
-  },
-  {
-    id: 6,
-    title: "Backend Engineer - Microservices",
-    version: "2.1",
-    ranking: 3,
-    date_created: "2024-02-05T14:20:00Z",
-    last_modified: "2024-03-08T10:30:00Z",
-    user_id: "test-user-1"
-  },
-  {
-    id: 7,
-    title: "AI/ML Research Position Resume",
-    version: "1.2",
-    ranking: 5,
-    date_created: "2024-03-01T16:10:00Z",
-    last_modified: "2024-03-14T15:45:00Z",
-    user_id: "test-user-1"
-  },
-  {
-    id: 8,
-    title: "Technical Lead - Startup Focus",
-    version: "2.5",
-    ranking: 4,
-    date_created: "2024-02-10T13:25:00Z",
-    last_modified: "2024-03-11T12:20:00Z",
-    user_id: "test-user-1"
-  }
-]
-
-interface Resume {
-  id: number
-  title: string
-  version: string
-  ranking: number
-  date_created: string
-  last_modified: string
-  user_id: string
-}
+import Link from "next/link"
 
 interface DeleteConfirmDialogProps {
-  resumeId: number
-  resumeTitle: string
+  resumeId: string
+  resumeName: string
   onConfirm: () => void
 }
 
-function DeleteConfirmDialog({ resumeId, resumeTitle, onConfirm }: DeleteConfirmDialogProps) {
+function DeleteConfirmDialog({ resumeId, resumeName, onConfirm }: DeleteConfirmDialogProps) {
   const [open, setOpen] = useState(false)
   
   const handleConfirm = () => {
@@ -133,7 +50,7 @@ function DeleteConfirmDialog({ resumeId, resumeTitle, onConfirm }: DeleteConfirm
         <DialogHeader>
           <DialogTitle>Delete Resume</DialogTitle>
           <DialogDescription>
-            Are you sure you want to delete the resume "{resumeTitle}"? This action cannot be undone.
+            Are you sure you want to delete the resume "{resumeName}"? This action cannot be undone.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
@@ -150,14 +67,16 @@ function DeleteConfirmDialog({ resumeId, resumeTitle, onConfirm }: DeleteConfirm
 }
 
 export default function ResumePage() {
-  const [resumes, setResumes] = useState<Resume[]>(TEST_RESUMES)
+  const [resumes, setResumes] = useState<Resume[]>([])
+  const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [user, setUser] = useState<any>(null)
 
   async function handleUpdateResume(updatedResume: Resume) {
     try {
-      setResumes(prev => prev.map(resume => 
-        resume.id === updatedResume.id ? updatedResume : resume
-      ))
+      const { id, user_id, created_at, updated_at, ...updateData } = updatedResume
+      await resumeService.update(id, updateData)
+      setResumes(prev => prev.map(resume => resume.id === id ? updatedResume : resume))
     } catch (err) {
       console.error('Error updating resume:', err)
       const errorMessage = err instanceof Error ? err.message : 'Failed to update resume'
@@ -166,31 +85,13 @@ export default function ResumePage() {
     }
   }
 
-  async function handleDeleteResume(resumeId: number) {
+  async function handleDeleteResume(resumeId: string) {
     try {
+      await resumeService.delete(resumeId)
       setResumes(prev => prev.filter(resume => resume.id !== resumeId))
     } catch (err) {
       console.error('Error deleting resume:', err)
       const errorMessage = err instanceof Error ? err.message : 'Failed to delete resume'
-      setError(errorMessage)
-      setTimeout(() => setError(null), 3000)
-    }
-  }
-
-  async function handleDuplicateResume(resume: Resume) {
-    try {
-      const newId = Math.max(...resumes.map(r => r.id)) + 1
-      const resumeCopy = {
-        ...resume,
-        id: newId,
-        title: `${resume.title} (Copy)`,
-        date_created: new Date().toISOString(),
-        last_modified: new Date().toISOString(),
-      }
-      setResumes(prev => [...prev, resumeCopy])
-    } catch (err) {
-      console.error('Error duplicating resume:', err)
-      const errorMessage = err instanceof Error ? err.message : 'Failed to duplicate resume'
       setError(errorMessage)
       setTimeout(() => setError(null), 3000)
     }
@@ -206,51 +107,41 @@ export default function ResumePage() {
             variant="ghost"
             size="icon"
             className="action-button"
-            onClick={() => handleDuplicateResume(row.original)}
+            onClick={() => {
+              const { id, user_id, created_at, updated_at, ...resumeData } = row.original
+              const resumeCopy = {
+                ...resumeData,
+                name: `${resumeData.name} (Copy)`
+              }
+              resumeService.create(resumeCopy).then(() => loadResumes())
+            }}
           >
             <Copy className="h-4 w-4" />
           </Button>
+          <Link href={`/resume/${row.original.id}`}>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="action-button"
+            >
+              <FileDown className="h-4 w-4" />
+            </Button>
+          </Link>
           <DeleteConfirmDialog 
             resumeId={row.original.id}
-            resumeTitle={row.original.title}
+            resumeName={row.original.name}
             onConfirm={() => handleDeleteResume(row.original.id)}
           />
         </div>
       ),
     },
     {
-      accessorKey: "title",
-      header: "Title",
-      cell: ({ row, table }) => (
-        <InlineEdit
-          value={row.original.title}
-          onSave={(value: string) => {
-            const updatedResume = { ...row.original, title: value }
-            table.options.meta?.updateData(updatedResume)
-          }}
-        />
-      ),
-    },
-    {
-      accessorKey: "version",
-      header: "Version",
-      cell: ({ row, table }) => (
-        <InlineEdit
-          value={row.original.version}
-          onSave={(value: string) => {
-            const updatedResume = { ...row.original, version: value }
-            table.options.meta?.updateData(updatedResume)
-          }}
-        />
-      ),
-    },
-    {
       accessorKey: "ranking",
-      header: "Ranking",
+      header: "Rating",
       cell: ({ row, table }) => (
         <InlineEdit
           value={row.original.ranking}
-          onSave={(value: string) => {
+          onSave={(value) => {
             const updatedResume = { ...row.original, ranking: Number(value) }
             table.options.meta?.updateData(updatedResume)
           }}
@@ -260,10 +151,36 @@ export default function ResumePage() {
       ),
     },
     {
-      accessorKey: "date_created",
-      header: "Date Created",
+      accessorKey: "name",
+      header: "Name",
+      cell: ({ row, table }) => (
+        <InlineEdit
+          value={row.original.name}
+          onSave={(value) => {
+            const updatedResume = { ...row.original, name: value }
+            table.options.meta?.updateData(updatedResume)
+          }}
+        />
+      ),
+    },
+    {
+      accessorKey: "template",
+      header: "Template",
+      cell: ({ row, table }) => (
+        <InlineEdit
+          value={row.original.template}
+          onSave={(value) => {
+            const updatedResume = { ...row.original, template: value }
+            table.options.meta?.updateData(updatedResume)
+          }}
+        />
+      ),
+    },
+    {
+      accessorKey: "created_at",
+      header: "Created",
       cell: ({ row }) => {
-        const date = new Date(row.original.date_created)
+        const date = new Date(row.original.created_at)
         return date.toLocaleDateString('en-US', {
           month: '2-digit',
           day: '2-digit',
@@ -272,10 +189,10 @@ export default function ResumePage() {
       }
     },
     {
-      accessorKey: "last_modified",
+      accessorKey: "updated_at",
       header: "Last Modified",
       cell: ({ row }) => {
-        const date = new Date(row.original.last_modified)
+        const date = new Date(row.original.updated_at)
         return date.toLocaleDateString('en-US', {
           month: '2-digit',
           day: '2-digit',
@@ -285,26 +202,82 @@ export default function ResumePage() {
     },
   ]
 
-  return (
-    <div className="container mx-auto p-4">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Resume Management</h1>
-        <AddResumeModal onSuccess={() => {}} />
-      </div>
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setUser(user)
+      if (user) {
+        loadResumes()
+      } else {
+        window.location.href = '/login'
+      }
+    })
+  }, [])
 
-      {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4">
-          {error}
+  async function loadResumes() {
+    try {
+      setLoading(true)
+      const data = await resumeService.list()
+      setResumes(data)
+    } catch (err) {
+      console.error('Error loading resumes:', err)
+      setError(err instanceof Error ? err.message : 'Failed to load resumes')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (!user) {
+    return <div className="p-6">Redirecting to login...</div>
+  }
+
+  if (loading) {
+    return (
+      <div className="p-6">
+        <div className="space-y-4">
+          <div className="skeleton h-20"></div>
+          <div className="skeleton h-10 w-1/4"></div>
+          <div className="space-y-3">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="skeleton h-12"></div>
+            ))}
+          </div>
         </div>
-      )}
+      </div>
+    )
+  }
 
-      <DataTable
-        columns={columns}
-        data={resumes}
-        meta={{
-          updateData: handleUpdateResume,
-        }}
-      />
+  if (error) {
+    return (
+      <div className="p-6">
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+          Error: {error}
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="min-h-screen gradient-bg">
+      <div className="mx-auto max-w-7xl space-y-6 p-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-semibold">Resumes</h1>
+          <Link href="/resume/new">
+            <Button>Create New Resume</Button>
+          </Link>
+        </div>
+
+        {/* Data Table */}
+        <div className="card-shadow">
+          <DataTable
+            columns={columns}
+            data={resumes}
+            meta={{
+              updateData: handleUpdateResume,
+            }}
+          />
+        </div>
+      </div>
     </div>
   )
 } 
