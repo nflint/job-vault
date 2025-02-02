@@ -43,10 +43,31 @@ npm install
 ```
 
 3. Set up environment variables:
-```bash
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-```
+   1. Copy the `.env.example` file to `.env.local`:
+   ```bash
+   cp .env.example .env.local
+   ```
+   
+   2. Fill in the required environment variables in `.env.local`:
+   ```bash
+   # Supabase Configuration
+   NEXT_PUBLIC_SUPABASE_URL=your_project_url           # URL from Supabase project settings
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key        # Public anon key from Supabase project settings
+   SUPABASE_SERVICE_ROLE_KEY=your_service_role_key    # Service role key (keep this secret!)
+   
+   # PDF Export Configuration
+   PDF_EXPORT_SECRET=your_secret_key                  # Secret key for securing PDF exports
+   PDF_STORAGE_PATH=/path/to/storage                  # Local path for temporary PDF storage
+   
+   # Optional: Development Settings
+   NEXT_PUBLIC_DEV_MODE=false                        # Enable additional logging and dev features
+   ```
+
+   3. Obtain Supabase credentials:
+      - Create a project at [supabase.com](https://supabase.com)
+      - Go to Project Settings > API
+      - Copy the Project URL and anon/public key
+      - For the service role key (if needed), use the service_role key (keep this secret!)
 
 4. Run the development server:
 ```bash
