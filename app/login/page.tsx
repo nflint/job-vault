@@ -1,14 +1,15 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { supabase } from '@/lib/supabase'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Eye, EyeOff } from 'lucide-react'
 import { Button } from "@/components/ui/button"
+import { authService } from '@/lib/auth'
 
 export default function LoginPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -18,32 +19,31 @@ export default function LoginPage() {
 
   useEffect(() => {
     // Check if user is already authenticated
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    authService.getSession().then((session) => {
       if (session) {
-        router.push('/jobs')
+        // Redirect to the original destination or default to jobs
+        const from = searchParams.get('from')
+        router.push(from || '/jobs')
       } else {
         setLoading(false)
       }
     })
-  }, [router])
+  }, [router, searchParams])
 
   async function handleSignIn(e: React.FormEvent) {
     e.preventDefault()
     setIsSubmitting(true)
+    setMessage(null)
+
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      })
-      if (error) throw error
-      
-      // Redirect to jobs page after successful login
-      router.push('/jobs')
-    } catch (err) {
-      console.error('Error signing in:', err)
+      await authService.signIn(email, password)
+      // Redirect to the original destination or default to jobs
+      const from = searchParams.get('from')
+      router.push(from || '/jobs')
+    } catch (error) {
       setMessage({
         type: 'error',
-        text: err instanceof Error ? err.message : 'Failed to sign in'
+        text: error instanceof Error ? error.message : 'An unexpected error occurred'
       })
     } finally {
       setIsSubmitting(false)

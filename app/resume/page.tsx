@@ -20,6 +20,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import Link from "next/link"
+import { handleClientError } from "@/lib/error-handling"
 
 interface DeleteConfirmDialogProps {
   resumeId: string
@@ -78,8 +79,7 @@ export default function ResumePage() {
       await resumeService.update(id, updateData)
       setResumes(prev => prev.map(resume => resume.id === id ? updatedResume : resume))
     } catch (err) {
-      console.error('Error updating resume:', err)
-      const errorMessage = err instanceof Error ? err.message : 'Failed to update resume'
+      const errorMessage = handleClientError(err, "RESUME_UPDATE")
       setError(errorMessage)
       setTimeout(() => setError(null), 3000)
     }
@@ -90,8 +90,7 @@ export default function ResumePage() {
       await resumeService.delete(resumeId)
       setResumes(prev => prev.filter(resume => resume.id !== resumeId))
     } catch (err) {
-      console.error('Error deleting resume:', err)
-      const errorMessage = err instanceof Error ? err.message : 'Failed to delete resume'
+      const errorMessage = handleClientError(err, "RESUME_DELETE")
       setError(errorMessage)
       setTimeout(() => setError(null), 3000)
     }
