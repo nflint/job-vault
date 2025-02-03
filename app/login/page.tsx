@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
+import { authService } from '@/lib/auth'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Eye, EyeOff } from 'lucide-react'
@@ -31,12 +32,7 @@ export default function LoginPage() {
     e.preventDefault()
     setIsSubmitting(true)
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      })
-      if (error) throw error
-      
+      await authService.signIn(email, password)
       // Redirect to jobs page after successful login
       router.push('/jobs')
     } catch (err) {
