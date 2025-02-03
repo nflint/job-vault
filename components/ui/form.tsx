@@ -1,5 +1,16 @@
 "use client"
 
+/**
+ * Form Component Module
+ * 
+ * A form component built on top of react-hook-form that provides:
+ * - Form validation
+ * - Field error handling
+ * - Accessible form controls
+ * - Reusable form components
+ * - Type-safe form state
+ */
+
 import * as React from "react"
 import * as LabelPrimitive from "@radix-ui/react-label"
 import { Slot } from "@radix-ui/react-slot"
@@ -17,20 +28,30 @@ import { Label } from "@/components/ui/label"
 
 const Form = FormProvider
 
-type FormFieldContextValue<
+/**
+ * Props for the Form component
+ * @interface
+ */
+interface FormFieldContextValue<
   TFieldValues extends FieldValues = FieldValues,
   TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>
-> = {
+> {
   name: TName
 }
 
+/**
+ * Context for form field state
+ */
 const FormFieldContext = React.createContext<FormFieldContextValue>(
   {} as FormFieldContextValue
 )
 
 /**
- *
- * @param root0
+ * Provider component for form field context
+ * @param {Object} props - Component props
+ * @param {string} props.name - Field name
+ * @param {React.ReactNode} props.children - Child components
+ * @returns {JSX.Element} Form field provider component
  */
 const FormField = <
   TFieldValues extends FieldValues = FieldValues,
@@ -46,7 +67,9 @@ const FormField = <
 }
 
 /**
- *
+ * Custom hook to access form field context
+ * @returns {FormFieldContextValue} Form field context value
+ * @throws {Error} If used outside FormField provider
  */
 const useFormField = () => {
   const fieldContext = React.useContext(FormFieldContext)
@@ -71,14 +94,16 @@ const useFormField = () => {
   }
 }
 
-type FormItemContextValue = {
-  id: string
-}
+/**
+ * Context for form item state
+ */
+const FormItemContext = React.createContext<{ id: string }>({ id: "" })
 
-const FormItemContext = React.createContext<FormItemContextValue>(
-  {} as FormItemContextValue
-)
-
+/**
+ * Form item component that provides context for form controls
+ * @param {React.HTMLAttributes<HTMLDivElement>} props - Component props
+ * @returns {JSX.Element} Form item component
+ */
 const FormItem = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
@@ -93,6 +118,11 @@ const FormItem = React.forwardRef<
 })
 FormItem.displayName = "FormItem"
 
+/**
+ * Form label component
+ * @param {React.ComponentPropsWithoutRef<typeof LabelPrimitive.Root>} props - Component props
+ * @returns {JSX.Element} Form label component
+ */
 const FormLabel = React.forwardRef<
   React.ElementRef<typeof LabelPrimitive.Root>,
   React.ComponentPropsWithoutRef<typeof LabelPrimitive.Root>
@@ -110,6 +140,11 @@ const FormLabel = React.forwardRef<
 })
 FormLabel.displayName = "FormLabel"
 
+/**
+ * Form control component that wraps form inputs
+ * @param {React.ComponentPropsWithoutRef<typeof Slot>} props - Component props
+ * @returns {JSX.Element} Form control component
+ */
 const FormControl = React.forwardRef<
   React.ElementRef<typeof Slot>,
   React.ComponentPropsWithoutRef<typeof Slot>
@@ -132,6 +167,11 @@ const FormControl = React.forwardRef<
 })
 FormControl.displayName = "FormControl"
 
+/**
+ * Form description component for help text
+ * @param {React.HTMLAttributes<HTMLParagraphElement>} props - Component props
+ * @returns {JSX.Element} Form description component
+ */
 const FormDescription = React.forwardRef<
   HTMLParagraphElement,
   React.HTMLAttributes<HTMLParagraphElement>
@@ -149,6 +189,11 @@ const FormDescription = React.forwardRef<
 })
 FormDescription.displayName = "FormDescription"
 
+/**
+ * Form message component for displaying validation errors
+ * @param {React.HTMLAttributes<HTMLParagraphElement>} props - Component props
+ * @returns {JSX.Element} Form message component
+ */
 const FormMessage = React.forwardRef<
   HTMLParagraphElement,
   React.HTMLAttributes<HTMLParagraphElement>
@@ -182,4 +227,7 @@ export {
   FormDescription,
   FormMessage,
   FormField,
+  FormFieldContext,
+  FormItemContext,
+  FormProvider,
 }

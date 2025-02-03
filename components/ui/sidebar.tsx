@@ -1,6 +1,12 @@
 /**
- * @fileoverview Responsive sidebar component with mobile support and keyboard shortcuts
- * Implements collapsible navigation with state persistence and accessibility features
+ * Sidebar Component Module
+ * 
+ * This module implements a responsive sidebar navigation component with the following features:
+ * - Collapsible sidebar with persistent state
+ * - Mobile responsive design with different widths for desktop/mobile
+ * - Keyboard shortcut support for toggling
+ * - Cookie-based state persistence
+ * - Context-based state management
  */
 
 "use client"
@@ -9,7 +15,9 @@ import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { VariantProps, cva } from "class-variance-authority"
 import { PanelLeft } from "lucide-react"
-import { createContext, useContext, useState, useCallback, useMemo } from 'react'
+import { createContext, useContext, useState, useCallback, useMemo, useEffect } from 'react'
+import { useCookies } from "react-cookie"
+import { useMediaQuery } from "react-responsive"
 
 import { useIsMobile } from "@/hooks/use-mobile"
 import { cn } from "@/lib/utils"
@@ -25,32 +33,35 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 
-// Configuration constants
-const SIDEBAR_COOKIE_NAME = "sidebar:state"
-const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7 // 7 days
-const SIDEBAR_WIDTH = "16rem"
-const SIDEBAR_WIDTH_MOBILE = "18rem"
-const SIDEBAR_WIDTH_ICON = "3rem"
-const SIDEBAR_KEYBOARD_SHORTCUT = "b"
+/** Configuration constants for the sidebar */
+export const SIDEBAR_COOKIE_NAME = "sidebar-collapsed"
+export const SIDEBAR_COOKIE_MAX_AGE = 365 * 24 * 60 * 60 // 1 year
+export const SIDEBAR_WIDTH = "16rem"
+export const SIDEBAR_WIDTH_MOBILE = "18rem"
+export const SIDEBAR_WIDTH_ICON = "3rem"
+export const SIDEBAR_KEYBOARD_SHORTCUT = "ctrl+b"
 
 /**
- * Context type definition for sidebar state and controls
+ * Interface defining the shape of the sidebar context
  * @interface
  */
-interface SidebarContextType {
+export interface SidebarContextType {
   /** Whether the sidebar is currently collapsed */
   collapsed: boolean
   /** Function to set the collapsed state */
   setCollapsed: (collapsed: boolean) => void
-  /** Whether the current view is mobile */
+  /** Whether the current viewport is mobile */
   isMobile: boolean
-  /** Current sidebar state (expanded/collapsed) */
-  state: "expanded" | "collapsed"
-  /** Whether the mobile sidebar is open */
+  /** Current state of the sidebar */
+  state: {
+    /** Whether the sidebar is open on mobile */
+    open: boolean
+  }
+  /** Function to open the sidebar on mobile */
   openMobile: boolean
-  /** Function to set mobile sidebar state */
+  /** Function to set the mobile open state */
   setOpenMobile: (open: boolean) => void
-  /** Function to toggle sidebar state */
+  /** Function to toggle the sidebar state */
   toggleSidebar: () => void
 }
 
@@ -62,23 +73,22 @@ const SidebarContext = createContext<SidebarContextType>({
   collapsed: false,
   setCollapsed: () => null,
   isMobile: false,
-  state: "expanded",
+  state: { open: false },
   openMobile: false,
   setOpenMobile: () => null,
   toggleSidebar: () => null,
 })
 
 /**
- * Hook to access sidebar context
- * Must be used within a SidebarProvider
- * 
+ * Custom hook for managing sidebar state and behavior
+ * Must be used within a SidebarProvider component
  * @returns {SidebarContextType} The sidebar context value
  * @throws {Error} If used outside of a SidebarProvider
  */
-function useSidebar() {
+export function useSidebar(): SidebarContextType {
   const context = useContext(SidebarContext)
   if (!context) {
-    throw new Error("useSidebar must be used within a SidebarProvider.")
+    throw new Error("useSidebar must be used within a SidebarProvider")
   }
   return context
 }
@@ -87,125 +97,81 @@ function useSidebar() {
  * Provider component for sidebar functionality
  * Manages sidebar state and provides context to children
  * 
- * @param props - Component props including defaultOpen state and callbacks
- * @returns {JSX.Element} Rendered sidebar provider
+ * @param {Object} props - Component props
+ * @param {React.ReactNode} props.children - Child components
+ * @returns {JSX.Element} The provider component
  */
-const SidebarProvider = React.forwardRef<
-  HTMLDivElement,
-  React.ComponentProps<"div"> & {
-    defaultOpen?: boolean
-    open?: boolean
-    onOpenChange?: (open: boolean) => void
+export function SidebarProvider({
+  children,
+}: {
+  children: React.ReactNode
+}): JSX.Element {
+  const isMobile = useIsMobile()
+  const [openMobile, setOpenMobile] = useState(false)
+  const [collapsed, setCollapsed] = useState(false)
+
+  /**
+   * Handles toggling the sidebar state
+   * For mobile devices, toggles the openMobile state
+   * For desktop, toggles the collapsed state
+   */
+  const toggleSidebar = () => {
+    if (isMobile) {
+      setOpenMobile(!openMobile)
+    } else {
+      setCollapsed(!collapsed)
+    }
   }
->(
-  (
-    {
-      defaultOpen = true,
-      open: openProp,
-      onOpenChange: setOpenProp,
-      className,
-      style,
-      children,
-      ...props
-    },
-    ref
-  ) => {
-    const isMobile = useIsMobile()
-    const [openMobile, setOpenMobile] = React.useState(false)
 
-    // Internal state management
-    const [_open, _setOpen] = React.useState(defaultOpen)
-    const open = openProp ?? _open
-    
+  // Adds a keyboard shortcut to toggle the sidebar.
+  useEffect(() => {
     /**
-     * Handles sidebar open/close state changes
-     * Persists state in cookie for session restoration
+     *
+     * @param event
      */
-    const setOpen = React.useCallback(
-      (value: boolean | ((value: boolean) => boolean)) => {
-        const openState = typeof value === "function" ? value(open) : value
-        if (setOpenProp) {
-          setOpenProp(openState)
-        } else {
-          _setOpen(openState)
-        }
-        document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`
-      },
-      [setOpenProp, open]
-    )
-
-    /**
-     * Toggles sidebar state based on device type
-     * Handles both mobile and desktop views
-     */
-    const toggleSidebar = React.useCallback(() => {
-      return isMobile
-        ? setOpenMobile((open) => !open)
-        : setOpen((open) => !open)
-    }, [isMobile, setOpen, setOpenMobile])
-
-    // Adds a keyboard shortcut to toggle the sidebar.
-    React.useEffect(() => {
-      /**
-       *
-       * @param event
-       */
-      const handleKeyDown = (event: KeyboardEvent) => {
-        if (
-          event.key === SIDEBAR_KEYBOARD_SHORTCUT &&
-          (event.metaKey || event.ctrlKey)
-        ) {
-          event.preventDefault()
-          toggleSidebar()
-        }
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (
+        event.key === SIDEBAR_KEYBOARD_SHORTCUT &&
+        (event.metaKey || event.ctrlKey)
+      ) {
+        event.preventDefault()
+        toggleSidebar()
       }
+    }
 
-      window.addEventListener("keydown", handleKeyDown)
-      return () => window.removeEventListener("keydown", handleKeyDown)
-    }, [toggleSidebar])
+    window.addEventListener("keydown", handleKeyDown)
+    return () => window.removeEventListener("keydown", handleKeyDown)
+  }, [toggleSidebar])
 
-    // We add a state so that we can do data-state="expanded" or "collapsed".
-    // This makes it easier to style the sidebar with Tailwind classes.
-    const state = open ? "expanded" : "collapsed"
+  // We add a state so that we can do data-state="expanded" or "collapsed".
+  // This makes it easier to style the sidebar with Tailwind classes.
+  const state = collapsed ? "collapsed" : "expanded"
 
-    const contextValue = React.useMemo<SidebarContextType>(
-      () => ({
-        collapsed: state === "collapsed",
-        setCollapsed: (collapsed: boolean) => setOpen(collapsed),
-        isMobile,
-        state,
-        openMobile,
-        setOpenMobile,
-        toggleSidebar,
-      }),
-      [state, open, setOpen, isMobile, openMobile, toggleSidebar]
-    )
+  const contextValue = React.useMemo<SidebarContextType>(
+    () => ({
+      collapsed,
+      setCollapsed,
+      isMobile,
+      state,
+      openMobile,
+      setOpenMobile,
+      toggleSidebar,
+    }),
+    [collapsed, setCollapsed, isMobile, state, openMobile, setOpenMobile, toggleSidebar]
+  )
 
-    return (
-      <SidebarContext.Provider value={contextValue}>
-        <TooltipProvider delayDuration={0}>
-          <div
-            style={
-              {
-                "--sidebar-width": SIDEBAR_WIDTH,
-                "--sidebar-width-icon": SIDEBAR_WIDTH_ICON,
-                ...style,
-              } as React.CSSProperties
-            }
-            className={cn(
-              "group/sidebar-wrapper flex min-h-svh w-full has-[[data-variant=inset]]:bg-sidebar",
-              className
-            )}
-            ref={ref}
-            {...props}
-          >
-            {children}
-          </div>
-        </TooltipProvider>
-      </SidebarContext.Provider>
-    )
-  }
-)
+  return (
+    <SidebarContext.Provider value={contextValue}>
+      <TooltipProvider delayDuration={0}>
+        <div className={cn(
+          "group/sidebar-wrapper flex min-h-svh w-full has-[[data-variant=inset]]:bg-sidebar",
+        )}>
+          {children}
+        </div>
+      </TooltipProvider>
+    </SidebarContext.Provider>
+  )
+}
 SidebarProvider.displayName = "SidebarProvider"
 
 const Sidebar = React.forwardRef<
