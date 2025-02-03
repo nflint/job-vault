@@ -3,12 +3,18 @@ import { supabase } from '@/lib/supabase'
 import { getProfessionalHistory, createProfessionalHistory } from '@/lib/professional-history'
 import type { ProfessionalHistory } from '@/types'
 
+/**
+ *
+ */
 export function useUserHistory() {
   const [userHistory, setUserHistory] = useState<ProfessionalHistory | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<Error | null>(null)
 
   useEffect(() => {
+    /**
+     *
+     */
     async function loadUserHistory() {
       try {
         const { data: { session } } = await supabase.auth.getSession()

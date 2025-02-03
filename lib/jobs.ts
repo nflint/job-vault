@@ -2,7 +2,13 @@ import { supabase } from './supabase'
 import { handleClientError, ErrorCodes } from './error-handling'
 import type { Job, JobStatus } from '@/types'
 
+/**
+ *
+ */
 class JobsService {
+  /**
+   *
+   */
   async list(): Promise<Job[]> {
     try {
       const { data, error } = await supabase
@@ -25,6 +31,10 @@ class JobsService {
     }
   }
 
+  /**
+   *
+   * @param id
+   */
   async get(id: number) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) throw new Error('Not authenticated')
@@ -40,6 +50,10 @@ class JobsService {
     return data as Job
   }
 
+  /**
+   *
+   * @param job
+   */
   async create(job: Omit<Job, 'id' | 'user_id' | 'created_at' | 'updated_at' | 'date_saved'>) {
     try {
       // Get current user
@@ -83,6 +97,11 @@ class JobsService {
     }
   }
 
+  /**
+   *
+   * @param id
+   * @param updates
+   */
   async update(id: string, updates: Partial<Omit<Job, 'id' | 'user_id' | 'created_at' | 'updated_at'>>) {
     try {
       const { data, error } = await supabase
@@ -115,6 +134,10 @@ class JobsService {
     }
   }
 
+  /**
+   *
+   * @param id
+   */
   async delete(id: string) {
     try {
       const { error } = await supabase

@@ -21,6 +21,13 @@ interface EducationTimelineProps {
   onUpdate: () => void
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.historyId
+ * @param root0.education
+ * @param root0.onUpdate
+ */
 export function EducationTimeline({ historyId, education, onUpdate }: EducationTimelineProps) {
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const [editEducation, setEditEducation] = useState<Education | null>(null)
@@ -29,6 +36,10 @@ export function EducationTimeline({ historyId, education, onUpdate }: EducationT
     return new Date(b.start_date).getTime() - new Date(a.start_date).getTime()
   })
 
+  /**
+   *
+   * @param id
+   */
   async function handleDelete(id: string) {
     try {
       const response = await fetch(`/api/education/${id}`, {

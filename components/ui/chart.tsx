@@ -24,6 +24,9 @@ type ChartContextProps = {
 
 const ChartContext = React.createContext<ChartContextProps | null>(null)
 
+/**
+ *
+ */
 function useChart() {
   const context = React.useContext(ChartContext)
 
@@ -67,6 +70,12 @@ const ChartContainer = React.forwardRef<
 })
 ChartContainer.displayName = "Chart"
 
+/**
+ *
+ * @param root0
+ * @param root0.id
+ * @param root0.config
+ */
 const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
   const colorConfig = Object.entries(config).filter(
     ([_, config]) => config.theme || config.color
@@ -317,6 +326,12 @@ const ChartLegendContent = React.forwardRef<
 ChartLegendContent.displayName = "ChartLegend"
 
 // Helper to extract item config from a payload.
+/**
+ *
+ * @param config
+ * @param payload
+ * @param key
+ */
 function getPayloadConfigFromPayload(
   config: ChartConfig,
   payload: unknown,

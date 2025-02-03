@@ -3,6 +3,11 @@ import { updateCertification, deleteCertification } from "@/lib/professional-his
 import { createClient } from '@supabase/supabase-js'
 
 // Helper function to get error message based on environment
+/**
+ *
+ * @param error
+ * @param detailedMessage
+ */
 function getErrorMessage(error: any, detailedMessage: string) {
   if (process.env.NEXT_PUBLIC_SHOW_DETAILED_ERRORS === 'true') {
     return detailedMessage
@@ -10,6 +15,13 @@ function getErrorMessage(error: any, detailedMessage: string) {
   return 'An error occurred while processing your request'
 }
 
+/**
+ *
+ * @param request
+ * @param root0
+ * @param root0.params
+ * @param root0.params.id
+ */
 export async function PUT(
   request: Request,
   { params }: { params: { id: string } }
@@ -65,6 +77,13 @@ export async function PUT(
   }
 }
 
+/**
+ *
+ * @param request
+ * @param root0
+ * @param root0.params
+ * @param root0.params.id
+ */
 export async function DELETE(
   request: Request,
   { params }: { params: { id: string } }

@@ -66,6 +66,11 @@ interface AddJobModalProps {
   onJobAdded?: () => void
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.onJobAdded
+ */
 export function AddJobModal({ onJobAdded }: AddJobModalProps) {
   const [open, setOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -87,6 +92,10 @@ export function AddJobModal({ onJobAdded }: AddJobModalProps) {
     },
   })
 
+  /**
+   *
+   * @param values
+   */
   async function onSubmit(values: FormValues) {
     try {
       setIsSubmitting(true)

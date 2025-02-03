@@ -6,6 +6,9 @@ import { useRouter } from 'next/navigation'
 import { Eye, EyeOff } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 
+/**
+ *
+ */
 export default function ResetPasswordPage() {
   const router = useRouter()
   const [password, setPassword] = useState('')
@@ -27,6 +30,10 @@ export default function ResetPasswordPage() {
     })
   }, [router])
 
+  /**
+   *
+   * @param e
+   */
   async function handlePasswordReset(e: React.FormEvent) {
     e.preventDefault()
     if (password !== confirmPassword) {

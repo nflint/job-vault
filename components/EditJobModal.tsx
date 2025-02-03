@@ -29,19 +29,37 @@ interface EditJobModalProps {
   onSave: (job: Job) => void
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.job
+ * @param root0.onSave
+ */
 export function EditJobModal({ job, onSave }: EditJobModalProps) {
   const [open, setOpen] = useState(false)
   const [jobData, setJobData] = useState(job)
 
+  /**
+   *
+   * @param e
+   */
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     setJobData(prev => ({ ...prev, [name]: value }))
   }
 
+  /**
+   *
+   * @param value
+   */
   const handleStatusChange = (value: string) => {
     setJobData(prev => ({ ...prev, status: value as JobStatus }))
   }
 
+  /**
+   *
+   * @param e
+   */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     try {

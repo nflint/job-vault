@@ -23,6 +23,11 @@ const Command = React.forwardRef<
 ))
 Command.displayName = CommandPrimitive.displayName
 
+/**
+ *
+ * @param root0
+ * @param root0.children
+ */
 const CommandDialog = ({ children, ...props }: DialogProps) => {
   return (
     <Dialog {...props}>
@@ -124,6 +129,11 @@ const CommandItem = React.forwardRef<
 
 CommandItem.displayName = CommandPrimitive.Item.displayName
 
+/**
+ *
+ * @param root0
+ * @param root0.className
+ */
 const CommandShortcut = ({
   className,
   ...props

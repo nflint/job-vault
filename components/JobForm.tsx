@@ -7,6 +7,9 @@ import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
+/**
+ *
+ */
 export default function JobForm() {
   const [job, setJob] = useState({
     role: '',
@@ -20,6 +23,10 @@ export default function JobForm() {
     source: '',
   })
 
+  /**
+   *
+   * @param e
+   */
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     // TODO: Implement job submission logic
@@ -38,11 +45,19 @@ export default function JobForm() {
     })
   }
 
+  /**
+   *
+   * @param e
+   */
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
     setJob(prevJob => ({ ...prevJob, [name]: value }))
   }
 
+  /**
+   *
+   * @param value
+   */
   const handleStatusChange = (value: string) => {
     setJob(prevJob => ({ ...prevJob, status: value }))
   }

@@ -1,13 +1,13 @@
 /**
  * @fileoverview Jobs management page component for tracking and managing job applications
- * Implements a data table and status pipeline for job tracking
+ * Implements a data table with inline editing, status management, and job actions
  */
 
 "use client"
 
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { Copy, Trash2, ExternalLink } from "lucide-react"
+import { Copy, Trash2, ExternalLink, AlertCircle } from "lucide-react"
 import { StatusPipeline } from "@/components/StatusPipeline"
 import { StarRating } from "@/components/StarRating"
 import { DataTable } from "@/components/ui/data-table"
@@ -37,22 +37,34 @@ import {
 import Link from "next/link"
 import { useToast } from "@/hooks/use-toast"
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert"
-import { AlertCircle } from 'lucide-react'
 
 /**
- * Interface for table cell actions
+ * Interface for table cell actions and data updates
  * @interface
  */
 interface TableMeta {
+  /** Function to update job data */
   updateData: (updatedJob: Job) => Promise<void>
 }
 
+/**
+ * Props for the delete confirmation dialog
+ * @interface
+ */
 interface DeleteConfirmDialogProps {
-  jobId: number
+  /** ID of the job to delete */
+  jobId: string
+  /** Title of the job for display */
   jobTitle: string
+  /** Callback function when deletion is confirmed */
   onConfirm: () => void
 }
 
+/**
+ * Delete confirmation dialog component
+ * @param props - Component properties
+ * @returns {JSX.Element} Rendered dialog component
+ */
 function DeleteConfirmDialog({ jobId, jobTitle, onConfirm }: DeleteConfirmDialogProps) {
   const [open, setOpen] = useState(false)
   
@@ -109,6 +121,10 @@ export default function JobsPage(): JSX.Element {
   const [user, setUser] = useState<any>(null)
   const { toast } = useToast()
 
+  /**
+   * Loads jobs from the service
+   * Handles loading states and error messaging
+   */
   const loadJobs = async () => {
     try {
       setLoading(true)
@@ -117,7 +133,7 @@ export default function JobsPage(): JSX.Element {
       setJobs(data)
     } catch (error) {
       const message = error instanceof Error && 'errorResult' in error
-        ? error.message // Use our handled error message
+        ? error.message
         : 'Failed to load jobs. Please try again.'
       
       setError(message)
@@ -132,22 +148,24 @@ export default function JobsPage(): JSX.Element {
     }
   }
 
+  /**
+   * Updates a job's information
+   * @param updatedJob - Job object with updated information
+   */
   const handleUpdateJob = async (updatedJob: Job) => {
     try {
       const { id, user_id, created_at, updated_at, date_saved, ...updates } = updatedJob
       await jobsService.update(id, updates)
       
-      // Show success toast
       toast({
         title: "Job Updated",
         description: "The job has been successfully updated.",
       })
       
-      // Reload jobs to get latest data
       await loadJobs()
     } catch (error) {
       const message = error instanceof Error && 'errorResult' in error
-        ? error.message // Use our handled error message
+        ? error.message
         : 'Failed to update job. Please try again.'
       
       toast({
@@ -158,7 +176,11 @@ export default function JobsPage(): JSX.Element {
     }
   }
 
-  async function handleDeleteJob(jobId: number) {
+  /**
+   * Handles deletion of a job entry
+   * @param jobId - The ID of the job to delete
+   */
+  async function handleDeleteJob(jobId: string) {
     try {
       await jobsService.delete(jobId)
       setJobs(prev => prev.filter(job => job.id !== jobId))
@@ -174,6 +196,11 @@ export default function JobsPage(): JSX.Element {
     {
       id: "actions",
       header: "Actions",
+      /**
+       *
+       * @param root0
+       * @param root0.row
+       */
       cell: ({ row }) => (
         <div className="inline-flex items-center">
           <Button
@@ -182,12 +209,12 @@ export default function JobsPage(): JSX.Element {
             className="action-button"
             onClick={() => {
               const jobCopy = { ...row.original }
-              delete jobCopy.id
-              delete jobCopy.user_id
-              delete jobCopy.created_at
-              delete jobCopy.updated_at
-              jobCopy.position = `${jobCopy.position} (Copy)`
-              jobsService.create(jobCopy).then(() => loadJobs())
+              const { id, user_id, created_at, updated_at, ...copyData } = jobCopy
+              const newJob = {
+                ...copyData,
+                position: `${copyData.position} (Copy)`
+              }
+              jobsService.create(newJob).then(() => loadJobs())
             }}
           >
             <Copy className="h-4 w-4" />
@@ -213,6 +240,12 @@ export default function JobsPage(): JSX.Element {
     {
       accessorKey: "rating",
       header: "Rating",
+      /**
+       *
+       * @param root0
+       * @param root0.row
+       * @param root0.table
+       */
       cell: ({ row, table }) => (
         <InlineEdit
           value={row.original.rating}
@@ -232,6 +265,12 @@ export default function JobsPage(): JSX.Element {
     {
       accessorKey: "company",
       header: "Company",
+      /**
+       *
+       * @param root0
+       * @param root0.row
+       * @param root0.table
+       */
       cell: ({ row, table }) => (
         <InlineEdit
           value={row.original.company}
@@ -245,6 +284,12 @@ export default function JobsPage(): JSX.Element {
     {
       accessorKey: "max_salary",
       header: "Max Salary",
+      /**
+       *
+       * @param root0
+       * @param root0.row
+       * @param root0.table
+       */
       cell: ({ row, table }) => (
         <InlineEdit
           value={row.original.max_salary || ''}
@@ -258,6 +303,12 @@ export default function JobsPage(): JSX.Element {
     {
       accessorKey: "location",
       header: "Location",
+      /**
+       *
+       * @param root0
+       * @param root0.row
+       * @param root0.table
+       */
       cell: ({ row, table }) => (
         <InlineEdit
           value={row.original.location || ''}
@@ -271,6 +322,12 @@ export default function JobsPage(): JSX.Element {
     {
       accessorKey: "status",
       header: "Status",
+      /**
+       *
+       * @param root0
+       * @param root0.row
+       * @param root0.table
+       */
       cell: ({ row, table }) => (
         <Select
           value={row.original.status}
@@ -296,6 +353,11 @@ export default function JobsPage(): JSX.Element {
     {
       accessorKey: "date_saved",
       header: "Date Saved",
+      /**
+       *
+       * @param root0
+       * @param root0.row
+       */
       cell: ({ row }) => {
         const date = new Date(row.original.date_saved)
         return date.toLocaleDateString('en-US', {
@@ -308,13 +370,11 @@ export default function JobsPage(): JSX.Element {
   ]
 
   useEffect(() => {
-    // Check auth status and load jobs
     supabase.auth.getUser().then(({ data: { user } }) => {
       setUser(user)
       if (user) {
         loadJobs()
       } else {
-        // Redirect to login if not authenticated
         window.location.href = '/login'
       }
     })

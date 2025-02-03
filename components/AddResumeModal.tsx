@@ -35,6 +35,11 @@ interface AddResumeModalProps {
   onSuccess?: () => void
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.onSuccess
+ */
 export function AddResumeModal({ onSuccess }: AddResumeModalProps) {
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -47,6 +52,10 @@ export function AddResumeModal({ onSuccess }: AddResumeModalProps) {
     },
   })
 
+  /**
+   *
+   * @param values
+   */
   async function onSubmit(values: FormValues) {
     try {
       setLoading(true)

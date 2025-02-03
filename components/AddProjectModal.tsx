@@ -46,6 +46,15 @@ interface AddProjectModalProps {
   project?: Project
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.trigger
+ * @param root0.open
+ * @param root0.onOpenChange
+ * @param root0.onSuccess
+ * @param root0.project
+ */
 export function AddProjectModal({ 
   trigger,
   open: controlledOpen,
@@ -85,6 +94,9 @@ export function AddProjectModal({
     }
   }, [project, form])
 
+  /**
+   *
+   */
   async function loadHistory() {
     try {
       const { data: { user } } = await supabase.auth.getUser()
@@ -105,6 +117,10 @@ export function AddProjectModal({
   const isOpen = isControlled ? controlledOpen : open
   const setIsOpen = isControlled ? setControlledOpen : setOpen
 
+  /**
+   *
+   * @param data
+   */
   const onSubmit = async (data: ProjectFormValues) => {
     if (!historyId) {
       toast.error('Professional history not found')

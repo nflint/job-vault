@@ -31,6 +31,13 @@ declare module '@tanstack/table-core' {
   }
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.columns
+ * @param root0.data
+ * @param root0.meta
+ */
 export function DataTable<TData, TValue>({
   columns,
   data,

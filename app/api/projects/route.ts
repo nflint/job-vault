@@ -4,6 +4,11 @@ import type { ErrorResult } from '@/lib/error-handling'
 import { supabase } from "@/lib/supabase"
 
 // Helper function to get error message based on environment
+/**
+ *
+ * @param error
+ * @param detailedMessage
+ */
 function getErrorMessage(error: any, detailedMessage: string) {
   if (process.env.NEXT_PUBLIC_SHOW_DETAILED_ERRORS === 'true') {
     return detailedMessage
@@ -11,6 +16,10 @@ function getErrorMessage(error: any, detailedMessage: string) {
   return 'An error occurred while processing your request'
 }
 
+/**
+ *
+ * @param request
+ */
 export async function POST(request: Request) {
   try {
     const { data: { user } } = await supabase.auth.getUser()

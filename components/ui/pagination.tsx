@@ -4,6 +4,11 @@ import { ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { ButtonProps, buttonVariants } from "@/components/ui/button"
 
+/**
+ *
+ * @param root0
+ * @param root0.className
+ */
 const Pagination = ({ className, ...props }: React.ComponentProps<"nav">) => (
   <nav
     role="navigation"
@@ -39,6 +44,13 @@ type PaginationLinkProps = {
 } & Pick<ButtonProps, "size"> &
   React.ComponentProps<"a">
 
+/**
+ *
+ * @param root0
+ * @param root0.className
+ * @param root0.isActive
+ * @param root0.size
+ */
 const PaginationLink = ({
   className,
   isActive,
@@ -59,6 +71,11 @@ const PaginationLink = ({
 )
 PaginationLink.displayName = "PaginationLink"
 
+/**
+ *
+ * @param root0
+ * @param root0.className
+ */
 const PaginationPrevious = ({
   className,
   ...props
@@ -75,6 +92,11 @@ const PaginationPrevious = ({
 )
 PaginationPrevious.displayName = "PaginationPrevious"
 
+/**
+ *
+ * @param root0
+ * @param root0.className
+ */
 const PaginationNext = ({
   className,
   ...props
@@ -91,6 +113,11 @@ const PaginationNext = ({
 )
 PaginationNext.displayName = "PaginationNext"
 
+/**
+ *
+ * @param root0
+ * @param root0.className
+ */
 const PaginationEllipsis = ({
   className,
   ...props

@@ -41,6 +41,15 @@ interface AddCertificationModalProps {
   onSuccess: () => void
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.open
+ * @param root0.onOpenChange
+ * @param root0.historyId
+ * @param root0.certification
+ * @param root0.onSuccess
+ */
 export function AddCertificationModal({
   open,
   onOpenChange,
@@ -62,6 +71,10 @@ export function AddCertificationModal({
     },
   })
 
+  /**
+   *
+   * @param values
+   */
   async function onSubmit(values: FormValues) {
     setIsSubmitting(true)
     try {

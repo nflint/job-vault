@@ -10,6 +10,16 @@ interface PageLayoutProps {
   contentClassName?: string
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.children
+ * @param root0.title
+ * @param root0.description
+ * @param root0.actions
+ * @param root0.className
+ * @param root0.contentClassName
+ */
 export function PageLayout({
   children,
   title,

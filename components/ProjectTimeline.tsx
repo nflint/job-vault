@@ -15,10 +15,21 @@ interface ProjectTimelineProps {
   onProjectUpdated: () => void
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.projects
+ * @param root0.onProjectDeleted
+ * @param root0.onProjectUpdated
+ */
 export default function ProjectTimeline({ projects, onProjectDeleted, onProjectUpdated }: ProjectTimelineProps) {
   const [isDeleting, setIsDeleting] = useState<string | null>(null)
   const [editProject, setEditProject] = useState<Project | null>(null)
 
+  /**
+   *
+   * @param projectId
+   */
   const handleDeleteProject = async (projectId: string) => {
     try {
       setIsDeleting(projectId)

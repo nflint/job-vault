@@ -19,6 +19,9 @@ import { CertificationTimeline } from "@/components/CertificationTimeline"
 
 console.log("=== Professional History Page Rendering ===")
 
+/**
+ *
+ */
 export default function ProfessionalHistoryPage() {
   const [activeTab, setActiveTab] = useState("certifications")
   const [loading, setLoading] = useState(true)
@@ -36,6 +39,9 @@ export default function ProfessionalHistoryPage() {
     loadData()
   }, [])
 
+  /**
+   *
+   */
   async function loadData() {
     console.log("Starting loadData")
     try {

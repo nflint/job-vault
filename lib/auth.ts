@@ -8,7 +8,15 @@ export interface AuthUser {
   created_at?: string
 }
 
+/**
+ *
+ */
 class AuthService {
+  /**
+   *
+   * @param email
+   * @param password
+   */
   async signIn(email: string, password: string): Promise<AuthUser> {
     try {
       const { data, error } = await supabase.auth.signInWithPassword({

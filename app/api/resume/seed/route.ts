@@ -78,6 +78,9 @@ MongoDB Certified Developer`,
   ]
 }
 
+/**
+ *
+ */
 export async function POST() {
   try {
     // Get the current user

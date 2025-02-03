@@ -2,7 +2,13 @@ import { supabase } from '@/lib/supabase'
 import type { Project } from '@/types'
 import { handleClientError } from '@/lib/error-handling'
 
+/**
+ *
+ */
 class ProjectsService {
+  /**
+   *
+   */
   async list(): Promise<Project[]> {
     try {
       const { data, error } = await supabase
@@ -21,6 +27,10 @@ class ProjectsService {
     }
   }
 
+  /**
+   *
+   * @param project
+   */
   async create(project: Omit<Project, 'id' | 'created_at' | 'updated_at'>): Promise<Project> {
     try {
       const { data, error } = await supabase
@@ -41,6 +51,11 @@ class ProjectsService {
     }
   }
 
+  /**
+   *
+   * @param id
+   * @param project
+   */
   async update(id: string, project: Partial<Omit<Project, 'id' | 'created_at' | 'updated_at'>>): Promise<Project> {
     try {
       const { data, error } = await supabase
@@ -62,6 +77,10 @@ class ProjectsService {
     }
   }
 
+  /**
+   *
+   * @param id
+   */
   async delete(id: string): Promise<void> {
     try {
       const { error } = await supabase

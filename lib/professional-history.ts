@@ -14,6 +14,10 @@ import { supabase as defaultSupabase } from './supabase'
 import type { SupabaseClient } from '@supabase/supabase-js'
 
 // Professional History
+/**
+ *
+ * @param userId
+ */
 export async function getProfessionalHistory(userId: string) {
   console.log('Getting professional history for user:', userId)
   const { data, error } = await supabase
@@ -40,6 +44,10 @@ export async function getProfessionalHistory(userId: string) {
   return data as ProfessionalHistory
 }
 
+/**
+ *
+ * @param userId
+ */
 export async function createProfessionalHistory(userId: string) {
   console.log('Creating professional history for user:', userId)
   const { data, error } = await supabase
@@ -67,6 +75,10 @@ export async function createProfessionalHistory(userId: string) {
 }
 
 // Work Experience
+/**
+ *
+ * @param historyId
+ */
 export async function getWorkExperiences(historyId: string) {
   const { data, error } = await supabase
     .from('work_experiences')
@@ -84,6 +96,10 @@ export async function getWorkExperiences(historyId: string) {
   return data as (WorkExperience & { achievements: (Achievement & { achievement_metrics: AchievementMetric[] })[] })[]
 }
 
+/**
+ *
+ * @param experience
+ */
 export async function createWorkExperience(experience: Omit<WorkExperience, 'id' | 'created_at' | 'updated_at'>) {
   const { data, error } = await supabase
     .from('work_experiences')
@@ -95,6 +111,11 @@ export async function createWorkExperience(experience: Omit<WorkExperience, 'id'
   return data as WorkExperience
 }
 
+/**
+ *
+ * @param id
+ * @param experience
+ */
 export async function updateWorkExperience(id: string, experience: Partial<WorkExperience>) {
   const { data, error } = await supabase
     .from('work_experiences')
@@ -107,6 +128,10 @@ export async function updateWorkExperience(id: string, experience: Partial<WorkE
   return data as WorkExperience
 }
 
+/**
+ *
+ * @param id
+ */
 export async function deleteWorkExperience(id: string) {
   const { error } = await supabase
     .from('work_experiences')
@@ -117,6 +142,10 @@ export async function deleteWorkExperience(id: string) {
 }
 
 // Education
+/**
+ *
+ * @param historyId
+ */
 export async function getEducation(historyId: string): Promise<Education[]> {
   console.log('Fetching education for history:', historyId)
   const { data, error } = await supabase
@@ -134,6 +163,10 @@ export async function getEducation(historyId: string): Promise<Education[]> {
   return data || []
 }
 
+/**
+ *
+ * @param education
+ */
 export async function createEducation(education: Omit<Education, "id" | "created_at">): Promise<Education> {
   const { data, error } = await supabase
     .from("education")
@@ -149,6 +182,11 @@ export async function createEducation(education: Omit<Education, "id" | "created
   return data
 }
 
+/**
+ *
+ * @param id
+ * @param education
+ */
 export async function updateEducation(id: string, education: Partial<Education>): Promise<Education> {
   const { data, error } = await supabase
     .from("education")
@@ -165,6 +203,10 @@ export async function updateEducation(id: string, education: Partial<Education>)
   return data
 }
 
+/**
+ *
+ * @param id
+ */
 export async function deleteEducation(id: string): Promise<void> {
   const { error } = await supabase
     .from("education")
@@ -178,6 +220,10 @@ export async function deleteEducation(id: string): Promise<void> {
 }
 
 // Projects
+/**
+ *
+ * @param historyId
+ */
 export async function getProjects(historyId: string): Promise<Project[]> {
   console.log('Fetching projects for history:', historyId)
   
@@ -225,6 +271,11 @@ export async function getProjects(historyId: string): Promise<Project[]> {
   return data || []
 }
 
+/**
+ *
+ * @param project
+ * @param client
+ */
 export async function createProject(
   project: Omit<Project, "id" | "created_at" | "updated_at">,
   client: SupabaseClient = defaultSupabase
@@ -246,6 +297,11 @@ export async function createProject(
   return data
 }
 
+/**
+ *
+ * @param id
+ * @param project
+ */
 export async function updateProject(id: string, project: Partial<Project>): Promise<Project> {
   const { data, error } = await supabase
     .from("projects")
@@ -265,6 +321,10 @@ export async function updateProject(id: string, project: Partial<Project>): Prom
   return data
 }
 
+/**
+ *
+ * @param id
+ */
 export async function deleteProject(id: string): Promise<void> {
   const { error } = await supabase
     .from("projects")
@@ -278,6 +338,10 @@ export async function deleteProject(id: string): Promise<void> {
 }
 
 // Skills
+/**
+ *
+ * @param historyId
+ */
 export async function getSkills(historyId: string) {
   const { data, error } = await supabase
     .from('skills')
@@ -292,6 +356,10 @@ export async function getSkills(historyId: string) {
   return data as (Skill & { skill_contexts: SkillContext[] })[]
 }
 
+/**
+ *
+ * @param skill
+ */
 export async function createSkill(skill: Omit<Skill, 'id' | 'created_at' | 'updated_at'>) {
   const { data, error } = await supabase
     .from('skills')
@@ -303,6 +371,11 @@ export async function createSkill(skill: Omit<Skill, 'id' | 'created_at' | 'upda
   return data as Skill
 }
 
+/**
+ *
+ * @param id
+ * @param skill
+ */
 export async function updateSkill(id: string, skill: Partial<Skill>) {
   const { data, error } = await supabase
     .from('skills')
@@ -315,6 +388,10 @@ export async function updateSkill(id: string, skill: Partial<Skill>) {
   return data as Skill
 }
 
+/**
+ *
+ * @param id
+ */
 export async function deleteSkill(id: string) {
   const { error } = await supabase
     .from('skills')
@@ -325,6 +402,10 @@ export async function deleteSkill(id: string) {
 }
 
 // Achievements
+/**
+ *
+ * @param achievement
+ */
 export async function createAchievement(achievement: Omit<Achievement, 'id' | 'created_at' | 'updated_at'>) {
   const { data, error } = await supabase
     .from('achievements')
@@ -336,6 +417,11 @@ export async function createAchievement(achievement: Omit<Achievement, 'id' | 'c
   return data as Achievement
 }
 
+/**
+ *
+ * @param id
+ * @param achievement
+ */
 export async function updateAchievement(id: string, achievement: Partial<Achievement>) {
   const { data, error } = await supabase
     .from('achievements')
@@ -348,6 +434,10 @@ export async function updateAchievement(id: string, achievement: Partial<Achieve
   return data as Achievement
 }
 
+/**
+ *
+ * @param id
+ */
 export async function deleteAchievement(id: string) {
   const { error } = await supabase
     .from('achievements')
@@ -358,6 +448,10 @@ export async function deleteAchievement(id: string) {
 }
 
 // Achievement Metrics
+/**
+ *
+ * @param metric
+ */
 export async function createAchievementMetric(metric: Omit<AchievementMetric, 'id' | 'created_at'>) {
   const { data, error } = await supabase
     .from('achievement_metrics')
@@ -369,6 +463,10 @@ export async function createAchievementMetric(metric: Omit<AchievementMetric, 'i
   return data as AchievementMetric
 }
 
+/**
+ *
+ * @param id
+ */
 export async function deleteAchievementMetric(id: string) {
   const { error } = await supabase
     .from('achievement_metrics')
@@ -379,6 +477,10 @@ export async function deleteAchievementMetric(id: string) {
 }
 
 // Certifications
+/**
+ *
+ * @param historyId
+ */
 export async function getCertifications(historyId: string): Promise<Certification[]> {
   console.log('Fetching certifications for history:', historyId)
   
@@ -423,6 +525,11 @@ export async function getCertifications(historyId: string): Promise<Certificatio
   return data || []
 }
 
+/**
+ *
+ * @param certification
+ * @param client
+ */
 export async function createCertification(
   certification: Omit<Certification, "id" | "created_at" | "updated_at">,
   client: SupabaseClient = defaultSupabase
@@ -441,6 +548,12 @@ export async function createCertification(
   return data
 }
 
+/**
+ *
+ * @param id
+ * @param certification
+ * @param client
+ */
 export async function updateCertification(
   id: string,
   certification: Partial<Certification>,
@@ -464,6 +577,11 @@ export async function updateCertification(
   return data
 }
 
+/**
+ *
+ * @param id
+ * @param client
+ */
 export async function deleteCertification(
   id: string,
   client: SupabaseClient = defaultSupabase

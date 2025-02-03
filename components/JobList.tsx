@@ -2,8 +2,8 @@
 
 import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Button } from "@/components/ui/button"
 
 type Job = {
   id: string
@@ -18,6 +18,9 @@ type Job = {
   source: string
 }
 
+/**
+ *
+ */
 export default function JobList() {
   // Mock data for demonstration
   const [jobs, setJobs] = useState<Job[]>([
@@ -47,6 +50,11 @@ export default function JobList() {
     },
   ])
 
+  /**
+   *
+   * @param jobId
+   * @param newStatus
+   */
   const handleStatusChange = (jobId: string, newStatus: string) => {
     setJobs(prevJobs =>
       prevJobs.map(job =>

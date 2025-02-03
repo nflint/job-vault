@@ -5,6 +5,11 @@ import { Drawer as DrawerPrimitive } from "vaul"
 
 import { cn } from "@/lib/utils"
 
+/**
+ *
+ * @param root0
+ * @param root0.shouldScaleBackground
+ */
 const Drawer = ({
   shouldScaleBackground = true,
   ...props
@@ -55,6 +60,11 @@ const DrawerContent = React.forwardRef<
 ))
 DrawerContent.displayName = "DrawerContent"
 
+/**
+ *
+ * @param root0
+ * @param root0.className
+ */
 const DrawerHeader = ({
   className,
   ...props
@@ -66,6 +76,11 @@ const DrawerHeader = ({
 )
 DrawerHeader.displayName = "DrawerHeader"
 
+/**
+ *
+ * @param root0
+ * @param root0.className
+ */
 const DrawerFooter = ({
   className,
   ...props

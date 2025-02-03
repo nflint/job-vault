@@ -2,6 +2,10 @@ import { NextResponse } from "next/server"
 import { createEducation } from "@/lib/professional-history"
 import { supabase } from "@/lib/supabase"
 
+/**
+ *
+ * @param request
+ */
 export async function POST(request: Request) {
   try {
     const { data: { user } } = await supabase.auth.getUser()

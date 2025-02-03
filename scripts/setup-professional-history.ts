@@ -8,6 +8,9 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY! // Note: We need the service role key to create tables
 )
 
+/**
+ *
+ */
 async function setupProfessionalHistory() {
   console.log('Setting up professional history tables...')
 

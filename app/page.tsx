@@ -24,6 +24,9 @@ export const metadata: Metadata = {
   description: 'Track and optimize your job search with AI-powered insights and analytics',
 }
 
+/**
+ *
+ */
 export default function HomePage(): JSX.Element {
   return (
     <main className="min-h-screen">

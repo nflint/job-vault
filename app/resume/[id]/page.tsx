@@ -32,6 +32,12 @@ const FONT_FAMILIES = [
   { value: "montserrat", label: "Montserrat" }
 ]
 
+/**
+ *
+ * @param root0
+ * @param root0.params
+ * @param root0.params.id
+ */
 export default function ResumeEditorPage({ params }: { params: { id: string } }) {
   const router = useRouter()
   const isNew = params.id === "new"
@@ -64,6 +70,9 @@ export default function ResumeEditorPage({ params }: { params: { id: string } })
     }
   }, [params.id])
 
+  /**
+   *
+   */
   async function loadResume() {
     try {
       setLoading(true)
@@ -77,6 +86,9 @@ export default function ResumeEditorPage({ params }: { params: { id: string } })
     }
   }
 
+  /**
+   *
+   */
   async function handleSave() {
     try {
       setSaving(true)
@@ -119,6 +131,9 @@ export default function ResumeEditorPage({ params }: { params: { id: string } })
     }
   }
 
+  /**
+   *
+   */
   function handleAddSection() {
     setResume(prev => ({
       ...prev,
@@ -138,6 +153,10 @@ export default function ResumeEditorPage({ params }: { params: { id: string } })
     }))
   }
 
+  /**
+   *
+   * @param index
+   */
   async function handleDeleteSection(index: number) {
     const section = resume.sections[index]
     if (section.id) {
@@ -156,6 +175,10 @@ export default function ResumeEditorPage({ params }: { params: { id: string } })
     }))
   }
 
+  /**
+   *
+   * @param result
+   */
   function handleDragEnd(result: DropResult) {
     if (!result.destination) return
     

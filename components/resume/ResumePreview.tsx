@@ -13,6 +13,11 @@ interface ResumePreviewProps {
   resume: Resume & { sections: ResumeSection[] }
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.resume
+ */
 export function ResumePreview({ resume }: ResumePreviewProps) {
   const containerStyle = useMemo(() => ({
     fontFamily: fontFamilyMap[resume.font_family as keyof typeof fontFamilyMap] || 'var(--font-inter)',

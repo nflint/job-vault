@@ -41,6 +41,11 @@ export const metadata: Metadata = {
   description: "Track your job search and manage your professional history",
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.children
+ */
 export default function RootLayout({
   children,
 }: {

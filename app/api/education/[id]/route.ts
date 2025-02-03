@@ -2,6 +2,13 @@ import { NextResponse } from "next/server"
 import { updateEducation, deleteEducation } from "@/lib/professional-history"
 import { supabase } from "@/lib/supabase"
 
+/**
+ *
+ * @param request
+ * @param root0
+ * @param root0.params
+ * @param root0.params.id
+ */
 export async function PUT(
   request: Request,
   { params }: { params: { id: string } }
@@ -31,6 +38,13 @@ export async function PUT(
   }
 }
 
+/**
+ *
+ * @param request
+ * @param root0
+ * @param root0.params
+ * @param root0.params.id
+ */
 export async function DELETE(
   request: Request,
   { params }: { params: { id: string } }

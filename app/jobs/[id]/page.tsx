@@ -18,6 +18,12 @@ import {
 } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 
+/**
+ *
+ * @param root0
+ * @param root0.params
+ * @param root0.params.id
+ */
 export default function JobDetailsPage({ params }: { params: { id: string } }) {
   const router = useRouter()
   const [job, setJob] = useState<Job | null>(null)
@@ -35,6 +41,9 @@ export default function JobDetailsPage({ params }: { params: { id: string } }) {
     }
   }, [job?.description])
 
+  /**
+   *
+   */
   async function loadJob() {
     try {
       setLoading(true)
@@ -48,6 +57,11 @@ export default function JobDetailsPage({ params }: { params: { id: string } }) {
     }
   }
 
+  /**
+   *
+   * @param field
+   * @param value
+   */
   async function handleUpdateJob(field: string, value: any) {
     if (!job) return
 
@@ -62,6 +76,9 @@ export default function JobDetailsPage({ params }: { params: { id: string } }) {
     }
   }
 
+  /**
+   *
+   */
   async function handleDescriptionSave() {
     if (!job) return
     await handleUpdateJob('description', description)

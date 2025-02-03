@@ -7,6 +7,9 @@ import Link from 'next/link'
 import { Eye, EyeOff } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 
+/**
+ *
+ */
 function SignUp() {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -31,6 +34,10 @@ function SignUp() {
     })
   }, [router])
 
+  /**
+   *
+   * @param e
+   */
   async function handleSignUp(e: React.FormEvent) {
     e.preventDefault()
     if (password !== confirmPassword) {
@@ -65,6 +72,10 @@ function SignUp() {
     }
   }
 
+  /**
+   *
+   * @param e
+   */
   async function handlePasswordReset(e: React.FormEvent) {
     e.preventDefault()
     setIsSubmitting(true)
@@ -228,6 +239,9 @@ function SignUp() {
   )
 }
 
+/**
+ *
+ */
 export default function SignUpPage() {
   return (
     <Suspense fallback={

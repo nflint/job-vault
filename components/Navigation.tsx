@@ -16,6 +16,9 @@ const navigation = [
   { name: "Pricing", href: "/pricing" },
 ]
 
+/**
+ *
+ */
 export function Navigation() {
   const pathname = usePathname()
   const [user, setUser] = useState<any>(null)
@@ -36,6 +39,9 @@ export function Navigation() {
     return () => subscription.unsubscribe()
   }, [])
 
+  /**
+   *
+   */
   const handleSignOut = async () => {
     await supabase.auth.signOut()
   }

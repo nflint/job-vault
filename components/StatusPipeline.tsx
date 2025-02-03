@@ -12,6 +12,11 @@ interface StatusPipelineProps {
   jobs: Array<{ status: string }>
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.jobs
+ */
 export function StatusPipeline({ jobs }: StatusPipelineProps) {
   const statusCounts = jobs.reduce((acc, job) => {
     acc[job.status] = (acc[job.status] || 0) + 1
@@ -20,6 +25,10 @@ export function StatusPipeline({ jobs }: StatusPipelineProps) {
 
   const statuses: string[] = ['saved', 'applied', 'interviewing', 'offered', 'rejected', 'accepted']
 
+  /**
+   *
+   * @param count
+   */
   function getProgressWidth(count: number): string {
     if (jobs.length === 0) return 'w-0'
     const percentage = (count / jobs.length) * 100

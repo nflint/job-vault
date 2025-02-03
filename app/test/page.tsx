@@ -98,6 +98,9 @@ const SAMPLE_JOB = {
   description: 'Looking for an experienced full-stack developer to join our growing team.'
 }
 
+/**
+ *
+ */
 export default function TestPage() {
   const [resumeLoading, setResumeLoading] = useState(false)
   const [jobLoading, setJobLoading] = useState(false)
@@ -133,6 +136,9 @@ export default function TestPage() {
     return () => subscription.unsubscribe()
   }, [])
 
+  /**
+   *
+   */
   async function loadJobs() {
     try {
       const data = await jobsService.list()
@@ -143,6 +149,10 @@ export default function TestPage() {
     }
   }
 
+  /**
+   *
+   * @param e
+   */
   async function handleSignIn(e: React.FormEvent) {
     e.preventDefault()
     console.log('Attempting sign in with:', email)
@@ -161,6 +171,10 @@ export default function TestPage() {
     }
   }
 
+  /**
+   *
+   * @param e
+   */
   async function handleSignUp(e: React.FormEvent) {
     e.preventDefault()
     try {
@@ -176,6 +190,9 @@ export default function TestPage() {
     }
   }
 
+  /**
+   *
+   */
   async function handleSignOut() {
     try {
       await supabase.auth.signOut()
@@ -236,6 +253,9 @@ export default function TestPage() {
     )
   }
 
+  /**
+   *
+   */
   async function handleCreateSampleResume() {
     try {
       setResumeLoading(true)
@@ -318,6 +338,9 @@ export default function TestPage() {
     }
   }
 
+  /**
+   *
+   */
   async function handleCreateSampleJob() {
     try {
       setJobLoading(true)

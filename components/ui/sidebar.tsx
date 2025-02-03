@@ -1,9 +1,15 @@
+/**
+ * @fileoverview Responsive sidebar component with mobile support and keyboard shortcuts
+ * Implements collapsible navigation with state persistence and accessibility features
+ */
+
 "use client"
 
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { VariantProps, cva } from "class-variance-authority"
 import { PanelLeft } from "lucide-react"
+import { createContext, useContext, useState, useCallback, useMemo } from 'react'
 
 import { useIsMobile } from "@/hooks/use-mobile"
 import { cn } from "@/lib/utils"
@@ -19,34 +25,71 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 
+// Configuration constants
 const SIDEBAR_COOKIE_NAME = "sidebar:state"
-const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
+const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7 // 7 days
 const SIDEBAR_WIDTH = "16rem"
 const SIDEBAR_WIDTH_MOBILE = "18rem"
 const SIDEBAR_WIDTH_ICON = "3rem"
 const SIDEBAR_KEYBOARD_SHORTCUT = "b"
 
-type SidebarContext = {
-  state: "expanded" | "collapsed"
-  open: boolean
-  setOpen: (open: boolean) => void
-  openMobile: boolean
-  setOpenMobile: (open: boolean) => void
+/**
+ * Context type definition for sidebar state and controls
+ * @interface
+ */
+interface SidebarContextType {
+  /** Whether the sidebar is currently collapsed */
+  collapsed: boolean
+  /** Function to set the collapsed state */
+  setCollapsed: (collapsed: boolean) => void
+  /** Whether the current view is mobile */
   isMobile: boolean
+  /** Current sidebar state (expanded/collapsed) */
+  state: "expanded" | "collapsed"
+  /** Whether the mobile sidebar is open */
+  openMobile: boolean
+  /** Function to set mobile sidebar state */
+  setOpenMobile: (open: boolean) => void
+  /** Function to toggle sidebar state */
   toggleSidebar: () => void
 }
 
-const SidebarContext = React.createContext<SidebarContext | null>(null)
+/**
+ * Context provider for sidebar state management
+ * Provides default values for the sidebar context
+ */
+const SidebarContext = createContext<SidebarContextType>({
+  collapsed: false,
+  setCollapsed: () => null,
+  isMobile: false,
+  state: "expanded",
+  openMobile: false,
+  setOpenMobile: () => null,
+  toggleSidebar: () => null,
+})
 
+/**
+ * Hook to access sidebar context
+ * Must be used within a SidebarProvider
+ * 
+ * @returns {SidebarContextType} The sidebar context value
+ * @throws {Error} If used outside of a SidebarProvider
+ */
 function useSidebar() {
-  const context = React.useContext(SidebarContext)
+  const context = useContext(SidebarContext)
   if (!context) {
     throw new Error("useSidebar must be used within a SidebarProvider.")
   }
-
   return context
 }
 
+/**
+ * Provider component for sidebar functionality
+ * Manages sidebar state and provides context to children
+ * 
+ * @param props - Component props including defaultOpen state and callbacks
+ * @returns {JSX.Element} Rendered sidebar provider
+ */
 const SidebarProvider = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<"div"> & {
@@ -70,10 +113,14 @@ const SidebarProvider = React.forwardRef<
     const isMobile = useIsMobile()
     const [openMobile, setOpenMobile] = React.useState(false)
 
-    // This is the internal state of the sidebar.
-    // We use openProp and setOpenProp for control from outside the component.
+    // Internal state management
     const [_open, _setOpen] = React.useState(defaultOpen)
     const open = openProp ?? _open
+    
+    /**
+     * Handles sidebar open/close state changes
+     * Persists state in cookie for session restoration
+     */
     const setOpen = React.useCallback(
       (value: boolean | ((value: boolean) => boolean)) => {
         const openState = typeof value === "function" ? value(open) : value
@@ -82,14 +129,15 @@ const SidebarProvider = React.forwardRef<
         } else {
           _setOpen(openState)
         }
-
-        // This sets the cookie to keep the sidebar state.
         document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`
       },
       [setOpenProp, open]
     )
 
-    // Helper to toggle the sidebar.
+    /**
+     * Toggles sidebar state based on device type
+     * Handles both mobile and desktop views
+     */
     const toggleSidebar = React.useCallback(() => {
       return isMobile
         ? setOpenMobile((open) => !open)
@@ -98,6 +146,10 @@ const SidebarProvider = React.forwardRef<
 
     // Adds a keyboard shortcut to toggle the sidebar.
     React.useEffect(() => {
+      /**
+       *
+       * @param event
+       */
       const handleKeyDown = (event: KeyboardEvent) => {
         if (
           event.key === SIDEBAR_KEYBOARD_SHORTCUT &&
@@ -116,17 +168,17 @@ const SidebarProvider = React.forwardRef<
     // This makes it easier to style the sidebar with Tailwind classes.
     const state = open ? "expanded" : "collapsed"
 
-    const contextValue = React.useMemo<SidebarContext>(
+    const contextValue = React.useMemo<SidebarContextType>(
       () => ({
-        state,
-        open,
-        setOpen,
+        collapsed: state === "collapsed",
+        setCollapsed: (collapsed: boolean) => setOpen(collapsed),
         isMobile,
+        state,
         openMobile,
         setOpenMobile,
         toggleSidebar,
       }),
-      [state, open, setOpen, isMobile, openMobile, setOpenMobile, toggleSidebar]
+      [state, open, setOpen, isMobile, openMobile, toggleSidebar]
     )
 
     return (

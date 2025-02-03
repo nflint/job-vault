@@ -29,22 +29,40 @@ interface Props {
   onUpdate: () => void
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.historyId
+ * @param root0.experiences
+ * @param root0.onUpdate
+ */
 export function WorkExperienceTimeline({ historyId, experiences, onUpdate }: Props) {
   const [selectedExperience, setSelectedExperience] = useState<WorkExperience | null>(null)
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [experienceToDelete, setExperienceToDelete] = useState<WorkExperience | null>(null)
 
+  /**
+   *
+   * @param experience
+   */
   function handleEdit(experience: WorkExperience) {
     setSelectedExperience(experience)
     setIsAddModalOpen(true)
   }
 
+  /**
+   *
+   * @param experience
+   */
   function handleDelete(experience: WorkExperience) {
     setExperienceToDelete(experience)
     setIsDeleteDialogOpen(true)
   }
 
+  /**
+   *
+   */
   async function confirmDelete() {
     if (!experienceToDelete) return
 

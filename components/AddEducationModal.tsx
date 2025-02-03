@@ -42,6 +42,15 @@ interface AddEducationModalProps {
   onSuccess: () => void
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.open
+ * @param root0.onOpenChange
+ * @param root0.historyId
+ * @param root0.education
+ * @param root0.onSuccess
+ */
 export function AddEducationModal({
   open,
   onOpenChange,
@@ -64,6 +73,10 @@ export function AddEducationModal({
     },
   })
 
+  /**
+   *
+   * @param values
+   */
   async function onSubmit(values: EducationFormValues) {
     setIsSubmitting(true)
     try {

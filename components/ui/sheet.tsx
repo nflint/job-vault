@@ -74,6 +74,11 @@ const SheetContent = React.forwardRef<
 ))
 SheetContent.displayName = SheetPrimitive.Content.displayName
 
+/**
+ *
+ * @param root0
+ * @param root0.className
+ */
 const SheetHeader = ({
   className,
   ...props
@@ -88,6 +93,11 @@ const SheetHeader = ({
 )
 SheetHeader.displayName = "SheetHeader"
 
+/**
+ *
+ * @param root0
+ * @param root0.className
+ */
 const SheetFooter = ({
   className,
   ...props

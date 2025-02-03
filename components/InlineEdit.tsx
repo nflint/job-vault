@@ -9,6 +9,13 @@ interface InlineEditProps {
   children?: ReactNode
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.value
+ * @param root0.onSave
+ * @param root0.children
+ */
 export function InlineEdit({ value, onSave, children }: InlineEditProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [editValue, setEditValue] = useState(value.toString())
@@ -20,6 +27,10 @@ export function InlineEdit({ value, onSave, children }: InlineEditProps) {
     }
   }, [isEditing])
 
+  /**
+   *
+   * @param e
+   */
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       setIsEditing(false)
@@ -30,6 +41,9 @@ export function InlineEdit({ value, onSave, children }: InlineEditProps) {
     }
   }
 
+  /**
+   *
+   */
   const handleBlur = () => {
     setIsEditing(false)
     setEditValue(value.toString())

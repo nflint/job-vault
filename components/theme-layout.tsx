@@ -4,6 +4,11 @@ import Link from "next/link"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { useEffect } from "react"
 
+/**
+ *
+ * @param root0
+ * @param root0.children
+ */
 export function ThemeLayout({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     // Add no-transitions class to prevent transitions on load

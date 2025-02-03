@@ -4,6 +4,9 @@ import { useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 
+/**
+ *
+ */
 function AuthCallback() {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -56,6 +59,9 @@ function AuthCallback() {
   )
 }
 
+/**
+ *
+ */
 export default function AuthCallbackPage() {
   return (
     <Suspense fallback={

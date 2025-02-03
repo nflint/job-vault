@@ -1,7 +1,13 @@
 import { supabase } from './supabase'
 import type { Resume, ResumeSection, ResumeItem, ResumeExport } from '@/types'
 
+/**
+ *
+ */
 class ResumeService {
+  /**
+   *
+   */
   async list(): Promise<Resume[]> {
     const { data, error } = await supabase
       .from('resumes')
@@ -15,6 +21,10 @@ class ResumeService {
     return data
   }
 
+  /**
+   *
+   * @param id
+   */
   async get(id: string): Promise<Resume & { sections: ResumeSection[] }> {
     // Get resume
     const { data: resume, error: resumeError } = await supabase
@@ -46,6 +56,10 @@ class ResumeService {
     }
   }
 
+  /**
+   *
+   * @param resume
+   */
   async create(resume: Omit<Resume, 'id' | 'user_id' | 'created_at' | 'updated_at'>): Promise<Resume> {
     // Get current user
     const { data: { user }, error: userError } = await supabase.auth.getUser()
@@ -87,6 +101,11 @@ class ResumeService {
     return data
   }
 
+  /**
+   *
+   * @param id
+   * @param updates
+   */
   async update(id: string, updates: Partial<Omit<Resume, 'id' | 'user_id' | 'created_at' | 'updated_at'>>): Promise<Resume> {
     const { data, error } = await supabase
       .from('resumes')
@@ -99,6 +118,10 @@ class ResumeService {
     return data
   }
 
+  /**
+   *
+   * @param id
+   */
   async delete(id: string): Promise<void> {
     const { error } = await supabase
       .from('resumes')
@@ -109,6 +132,10 @@ class ResumeService {
   }
 
   // Section methods
+  /**
+   *
+   * @param section
+   */
   async createSection(section: Omit<ResumeSection, 'id' | 'created_at' | 'updated_at'>): Promise<ResumeSection> {
     const { data, error } = await supabase
       .from('resume_sections')
@@ -126,6 +153,11 @@ class ResumeService {
     return data
   }
 
+  /**
+   *
+   * @param id
+   * @param updates
+   */
   async updateSection(id: string, updates: Partial<Omit<ResumeSection, 'id' | 'resume_id' | 'created_at' | 'updated_at'>>): Promise<ResumeSection> {
     const { data, error } = await supabase
       .from('resume_sections')
@@ -138,6 +170,10 @@ class ResumeService {
     return data
   }
 
+  /**
+   *
+   * @param id
+   */
   async deleteSection(id: string): Promise<void> {
     const { error } = await supabase
       .from('resume_sections')
@@ -148,6 +184,10 @@ class ResumeService {
   }
 
   // Item methods
+  /**
+   *
+   * @param item
+   */
   async createItem(item: Omit<ResumeItem, 'id' | 'created_at' | 'updated_at'>): Promise<ResumeItem> {
     const { data, error } = await supabase
       .from('resume_items')
@@ -159,6 +199,11 @@ class ResumeService {
     return data
   }
 
+  /**
+   *
+   * @param id
+   * @param updates
+   */
   async updateItem(id: string, updates: Partial<Omit<ResumeItem, 'id' | 'section_id' | 'created_at' | 'updated_at'>>): Promise<ResumeItem> {
     const { data, error } = await supabase
       .from('resume_items')
@@ -171,6 +216,10 @@ class ResumeService {
     return data
   }
 
+  /**
+   *
+   * @param id
+   */
   async deleteItem(id: string): Promise<void> {
     const { error } = await supabase
       .from('resume_items')
@@ -181,6 +230,10 @@ class ResumeService {
   }
 
   // Export methods
+  /**
+   *
+   * @param resumeExport
+   */
   async createExport(resumeExport: Omit<ResumeExport, 'id' | 'created_at'>): Promise<ResumeExport> {
     const { data, error } = await supabase
       .from('resume_exports')
@@ -192,6 +245,10 @@ class ResumeService {
     return data
   }
 
+  /**
+   *
+   * @param resumeId
+   */
   async getExports(resumeId: string): Promise<ResumeExport[]> {
     const { data, error } = await supabase
       .from('resume_exports')

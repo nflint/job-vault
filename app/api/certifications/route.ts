@@ -3,6 +3,11 @@ import { createCertification } from "@/lib/professional-history"
 import { createClient } from '@supabase/supabase-js'
 
 // Helper function to get error message based on environment
+/**
+ *
+ * @param error
+ * @param detailedMessage
+ */
 function getErrorMessage(error: any, detailedMessage: string) {
   if (process.env.NEXT_PUBLIC_SHOW_DETAILED_ERRORS === 'true') {
     return detailedMessage
@@ -10,6 +15,10 @@ function getErrorMessage(error: any, detailedMessage: string) {
   return 'An error occurred while processing your request'
 }
 
+/**
+ *
+ * @param request
+ */
 export async function POST(request: Request) {
   try {
     // Get auth token from request header

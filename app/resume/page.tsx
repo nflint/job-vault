@@ -27,9 +27,19 @@ interface DeleteConfirmDialogProps {
   onConfirm: () => void
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.resumeId
+ * @param root0.resumeName
+ * @param root0.onConfirm
+ */
 function DeleteConfirmDialog({ resumeId, resumeName, onConfirm }: DeleteConfirmDialogProps) {
   const [open, setOpen] = useState(false)
   
+  /**
+   *
+   */
   const handleConfirm = () => {
     onConfirm()
     setOpen(false)
@@ -66,12 +76,19 @@ function DeleteConfirmDialog({ resumeId, resumeName, onConfirm }: DeleteConfirmD
   )
 }
 
+/**
+ *
+ */
 export default function ResumePage() {
   const [resumes, setResumes] = useState<Resume[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [user, setUser] = useState<any>(null)
 
+  /**
+   *
+   * @param updatedResume
+   */
   async function handleUpdateResume(updatedResume: Resume) {
     try {
       const { id, user_id, created_at, updated_at, ...updateData } = updatedResume
@@ -85,6 +102,10 @@ export default function ResumePage() {
     }
   }
 
+  /**
+   *
+   * @param resumeId
+   */
   async function handleDeleteResume(resumeId: string) {
     try {
       await resumeService.delete(resumeId)
@@ -101,6 +122,11 @@ export default function ResumePage() {
     {
       id: "actions",
       header: "Actions",
+      /**
+       *
+       * @param root0
+       * @param root0.row
+       */
       cell: ({ row }) => (
         <div className="inline-flex items-center">
           <Button
@@ -138,6 +164,12 @@ export default function ResumePage() {
     {
       accessorKey: "ranking",
       header: "Rating",
+      /**
+       *
+       * @param root0
+       * @param root0.row
+       * @param root0.table
+       */
       cell: ({ row, table }) => (
         <InlineEdit
           value={row.original.ranking}
@@ -153,6 +185,12 @@ export default function ResumePage() {
     {
       accessorKey: "name",
       header: "Name",
+      /**
+       *
+       * @param root0
+       * @param root0.row
+       * @param root0.table
+       */
       cell: ({ row, table }) => (
         <InlineEdit
           value={row.original.name}
@@ -166,6 +204,12 @@ export default function ResumePage() {
     {
       accessorKey: "template",
       header: "Template",
+      /**
+       *
+       * @param root0
+       * @param root0.row
+       * @param root0.table
+       */
       cell: ({ row, table }) => (
         <InlineEdit
           value={row.original.template}
@@ -179,6 +223,11 @@ export default function ResumePage() {
     {
       accessorKey: "created_at",
       header: "Created",
+      /**
+       *
+       * @param root0
+       * @param root0.row
+       */
       cell: ({ row }) => {
         const date = new Date(row.original.created_at)
         return date.toLocaleDateString('en-US', {
@@ -191,6 +240,11 @@ export default function ResumePage() {
     {
       accessorKey: "updated_at",
       header: "Last Modified",
+      /**
+       *
+       * @param root0
+       * @param root0.row
+       */
       cell: ({ row }) => {
         const date = new Date(row.original.updated_at)
         return date.toLocaleDateString('en-US', {
@@ -213,6 +267,9 @@ export default function ResumePage() {
     })
   }, [])
 
+  /**
+   *
+   */
   async function loadResumes() {
     try {
       setLoading(true)

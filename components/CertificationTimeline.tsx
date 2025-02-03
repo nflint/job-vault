@@ -14,6 +14,13 @@ interface CertificationTimelineProps {
   onUpdate: () => void
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.historyId
+ * @param root0.certifications
+ * @param root0.onUpdate
+ */
 export function CertificationTimeline({
   historyId,
   certifications,
@@ -22,6 +29,10 @@ export function CertificationTimeline({
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [editingCertification, setEditingCertification] = useState<Certification | undefined>()
 
+  /**
+   *
+   * @param certificationId
+   */
   async function handleDelete(certificationId: string) {
     try {
       // Get the session

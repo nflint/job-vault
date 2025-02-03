@@ -4,6 +4,13 @@ import { supabase } from "@/lib/supabase"
 import { createClient } from '@supabase/supabase-js'
 import type { Resume, ResumeSection, ResumeExport } from "@/types"
 
+/**
+ *
+ * @param request
+ * @param root0
+ * @param root0.params
+ * @param root0.params.id
+ */
 export async function GET(
   request: Request,
   { params }: { params: { id: string } }

@@ -10,6 +10,14 @@ interface StarRatingProps {
   editable?: boolean
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.rating
+ * @param root0.maxRating
+ * @param root0.onRatingChange
+ * @param root0.editable
+ */
 export function StarRating({ rating, maxRating = 5, onRatingChange, editable = false }: StarRatingProps) {
   return (
     <div className="star-rating">

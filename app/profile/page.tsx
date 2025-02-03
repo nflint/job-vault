@@ -86,6 +86,9 @@ export default function ProfilePage() {
     loadUserProfile()
   }, [])
 
+  /**
+   *
+   */
   async function loadUserProfile() {
     try {
       const { data: { user } } = await supabase.auth.getUser()
@@ -123,6 +126,10 @@ export default function ProfilePage() {
     }
   }
 
+  /**
+   *
+   * @param data
+   */
   const onSubmit = async (data: z.infer<typeof profileSchema>) => {
     setLoading(true)
     setError(null)

@@ -14,6 +14,9 @@ interface ErrorMessage {
   details?: string
 }
 
+/**
+ *
+ */
 export default function LoginPage() {
   const router = useRouter()
   const [email, setEmail] = useState('')
@@ -35,6 +38,10 @@ export default function LoginPage() {
     })
   }, [router])
 
+  /**
+   *
+   * @param e
+   */
   async function handleSignIn(e: React.FormEvent) {
     e.preventDefault()
     setIsSubmitting(true)

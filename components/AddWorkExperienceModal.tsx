@@ -55,6 +55,15 @@ interface Props {
   onSuccess: () => void
 }
 
+/**
+ *
+ * @param root0
+ * @param root0.historyId
+ * @param root0.experience
+ * @param root0.open
+ * @param root0.onOpenChange
+ * @param root0.onSuccess
+ */
 export function AddWorkExperienceModal({ historyId, experience, open, onOpenChange, onSuccess }: Props) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const isEditing = !!experience
@@ -100,6 +109,10 @@ export function AddWorkExperienceModal({ historyId, experience, open, onOpenChan
     }
   }, [experience, form])
 
+  /**
+   *
+   * @param data
+   */
   async function onSubmit(data: FormData) {
     try {
       setIsSubmitting(true)
