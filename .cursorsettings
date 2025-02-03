@@ -1,0 +1,54 @@
+{
+  "formatOnSave": true,
+  "defaultFormatter": "prettier",
+  "editor.tabSize": 2,
+  "editor.insertSpaces": true,
+  "editor.rulers": [100],
+  "files.exclude": {
+    "**/.git": true,
+    "**/.DS_Store": true,
+    "**/node_modules": true,
+    "**/.next": true,
+    "**/dist": true,
+    "**/coverage": true
+  },
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/.next": true,
+    "**/dist": true,
+    "**/coverage": true
+  },
+  "typescript.preferences.importModuleSpecifier": "non-relative",
+  "typescript.preferences.quoteStyle": "single",
+  "javascript.preferences.quoteStyle": "single",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true,
+    "source.organizeImports": true
+  },
+  "tailwindCSS.experimental.classRegex": [
+    ["cva\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"],
+    ["cn\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"]
+  ],
+  "tailwindCSS.validate": true,
+  "files.associations": {
+    "*.css": "tailwindcss"
+  },
+  "cursor.autoComplete": {
+    "enable": true,
+    "delay": 150,
+    "triggerCharacters": [".", ":", "@", "<", "(", "[", "{", "'", "\"", "`"]
+  },
+  "cursor.features": {
+    "copilot": true,
+    "chat": true,
+    "documentation": true,
+    "refactoring": true,
+    "debugging": true
+  },
+  "cursor.experimental": {
+    "completions": {
+      "enableInlineCompletions": true,
+      "enableGhostText": true
+    }
+  }
+} 
