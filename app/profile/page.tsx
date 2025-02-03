@@ -4,32 +4,60 @@ import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { EyeIcon, EyeOffIcon, History, Briefcase, GraduationCap, ScrollText, Settings2 } from "lucide-react"
+import { Card } from "@/components/ui/card"
+import { History, Briefcase, ScrollText, Settings2, EyeIcon, EyeOffIcon } from "lucide-react"
 import { supabase } from "@/lib/supabase"
 import Link from "next/link"
+import { PageLayout } from "@/components/ui/page-layout"
+import { Section } from "@/components/ui/section"
+import { ContentCard } from "@/components/ui/card-content"
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import * as z from "zod"
+
+const profileSchema = z.object({
+  firstName: z.string().min(1, "First name is required"),
+  lastName: z.string().min(1, "Last name is required"),
+  email: z.string().email("Invalid email address"),
+  password: z.string().optional(),
+  jobTitle: z.string().optional(),
+  industry: z.string().optional(),
+  yearsExperience: z.string().optional(),
+  linkedinUrl: z.string().url().optional().or(z.literal("")),
+  githubUrl: z.string().url().optional().or(z.literal("")),
+  portfolioUrl: z.string().url().optional().or(z.literal("")),
+  phone: z.string().optional(),
+  preferredCurrency: z.string(),
+  timezone: z.string(),
+  emailNotifications: z.boolean(),
+})
 
 export default function ProfilePage() {
-  const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    password: "",
-    jobTitle: "",
-    industry: "",
-    yearsExperience: "",
-    linkedinUrl: "",
-    githubUrl: "",
-    portfolioUrl: "",
-    phone: "",
-    preferredCurrency: "USD",
-    timezone: "UTC",
-    emailNotifications: true,
-  })
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
+
+  const form = useForm<z.infer<typeof profileSchema>>({
+    resolver: zodResolver(profileSchema),
+    defaultValues: {
+      firstName: "",
+      lastName: "",
+      email: "",
+      password: "",
+      jobTitle: "",
+      industry: "",
+      yearsExperience: "",
+      linkedinUrl: "",
+      githubUrl: "",
+      portfolioUrl: "",
+      phone: "",
+      preferredCurrency: "USD",
+      timezone: "UTC",
+      emailNotifications: true,
+    },
+  })
 
   useEffect(() => {
     loadUserProfile()
@@ -51,8 +79,7 @@ export default function ProfilePage() {
 
       if (error) throw error
 
-      setFormData(prev => ({
-        ...prev,
+      form.reset({
         firstName: profile?.first_name || "",
         lastName: profile?.last_name || "",
         email: user.email || "",
@@ -66,20 +93,14 @@ export default function ProfilePage() {
         preferredCurrency: profile?.preferred_currency || "USD",
         timezone: profile?.timezone || "UTC",
         emailNotifications: profile?.email_notifications ?? true,
-      }))
+      })
     } catch (err) {
       console.error('Error loading profile:', err)
       setError('Failed to load profile data')
     }
   }
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const onSubmit = async (data: z.infer<typeof profileSchema>) => {
     setLoading(true)
     setError(null)
     setSuccess(null)
@@ -93,41 +114,41 @@ export default function ProfilePage() {
         .from('profiles')
         .upsert({
           id: user.id,
-          first_name: formData.firstName,
-          last_name: formData.lastName,
-          job_title: formData.jobTitle,
-          industry: formData.industry,
-          years_experience: parseInt(formData.yearsExperience) || null,
-          linkedin_url: formData.linkedinUrl,
-          github_url: formData.githubUrl,
-          portfolio_url: formData.portfolioUrl,
-          phone: formData.phone,
-          preferred_currency: formData.preferredCurrency,
-          timezone: formData.timezone,
-          email_notifications: formData.emailNotifications,
+          first_name: data.firstName,
+          last_name: data.lastName,
+          job_title: data.jobTitle,
+          industry: data.industry,
+          years_experience: parseInt(data.yearsExperience || "0") || null,
+          linkedin_url: data.linkedinUrl,
+          github_url: data.githubUrl,
+          portfolio_url: data.portfolioUrl,
+          phone: data.phone,
+          preferred_currency: data.preferredCurrency,
+          timezone: data.timezone,
+          email_notifications: data.emailNotifications,
           updated_at: new Date().toISOString(),
         })
 
       if (profileError) throw profileError
 
       // Update email if changed
-      if (formData.email !== user.email) {
+      if (data.email !== user.email) {
         const { error: emailError } = await supabase.auth.updateUser({
-          email: formData.email,
+          email: data.email,
         })
         if (emailError) throw emailError
       }
 
       // Update password if provided
-      if (formData.password) {
+      if (data.password) {
         const { error: passwordError } = await supabase.auth.updateUser({
-          password: formData.password,
+          password: data.password,
         })
         if (passwordError) throw passwordError
       }
 
       setSuccess('Profile updated successfully')
-      setFormData(prev => ({ ...prev, password: '' }))
+      form.setValue('password', '')
     } catch (err) {
       console.error('Error updating profile:', err)
       setError(err instanceof Error ? err.message : 'Failed to update profile')
@@ -136,249 +157,184 @@ export default function ProfilePage() {
     }
   }
 
-  return (
-    <div className="min-h-screen gradient-bg">
-      <div className="mx-auto max-w-7xl space-y-6 p-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4 flex-wrap">
-            <h1 className="text-2xl font-semibold">Profile</h1>
-            <div className="flex gap-2 flex-wrap">
-              <Link href="/profile/professional-history">
-                <Button variant="outline" className="flex items-center gap-2">
-                  <History className="h-4 w-4" />
-                  Professional History
-                </Button>
-              </Link>
-              <Link href="/profile/skills">
-                <Button variant="outline" className="flex items-center gap-2">
-                  <Briefcase className="h-4 w-4" />
-                  Skills
-                </Button>
-              </Link>
-              <Link href="/profile/resumes">
-                <Button variant="outline" className="flex items-center gap-2">
-                  <ScrollText className="h-4 w-4" />
-                  Resumes
-                </Button>
-              </Link>
-              <Link href="/profile/settings">
-                <Button variant="outline" className="flex items-center gap-2">
-                  <Settings2 className="h-4 w-4" />
-                  Settings
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </div>
-
-        {/* Main Content */}
-        <Card className="max-w-2xl">
-          <CardHeader>
-            <CardDescription>Update your personal information and profile settings here.</CardDescription>
-          </CardHeader>
-          <form onSubmit={handleSubmit}>
-            <CardContent className="space-y-4">
-              {/* Personal Information */}
-              <div className="space-y-2">
-                <h3 className="text-lg font-medium">Personal Information</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="firstName">First Name</Label>
-                    <Input
-                      id="firstName"
-                      name="firstName"
-                      value={formData.firstName}
-                      onChange={handleInputChange}
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="lastName">Last Name</Label>
-                    <Input 
-                      id="lastName" 
-                      name="lastName" 
-                      value={formData.lastName} 
-                      onChange={handleInputChange} 
-                      required 
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Professional Information */}
-              <div className="space-y-2">
-                <h3 className="text-lg font-medium">Professional Information</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="jobTitle">Job Title</Label>
-                    <Input
-                      id="jobTitle"
-                      name="jobTitle"
-                      value={formData.jobTitle}
-                      onChange={handleInputChange}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="industry">Industry</Label>
-                    <Input
-                      id="industry"
-                      name="industry"
-                      value={formData.industry}
-                      onChange={handleInputChange}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="yearsExperience">Years of Experience</Label>
-                    <Input
-                      id="yearsExperience"
-                      name="yearsExperience"
-                      type="number"
-                      value={formData.yearsExperience}
-                      onChange={handleInputChange}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Social Links */}
-              <div className="space-y-2">
-                <h3 className="text-lg font-medium">Social Links</h3>
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="linkedinUrl">LinkedIn URL</Label>
-                    <Input
-                      id="linkedinUrl"
-                      name="linkedinUrl"
-                      type="url"
-                      value={formData.linkedinUrl}
-                      onChange={handleInputChange}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="githubUrl">GitHub URL</Label>
-                    <Input
-                      id="githubUrl"
-                      name="githubUrl"
-                      type="url"
-                      value={formData.githubUrl}
-                      onChange={handleInputChange}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="portfolioUrl">Portfolio URL</Label>
-                    <Input
-                      id="portfolioUrl"
-                      name="portfolioUrl"
-                      type="url"
-                      value={formData.portfolioUrl}
-                      onChange={handleInputChange}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Contact Information */}
-              <div className="space-y-2">
-                <h3 className="text-lg font-medium">Contact Information</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input
-                      id="email"
-                      name="email"
-                      type="email"
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="phone">Phone (optional)</Label>
-                    <Input
-                      id="phone"
-                      name="phone"
-                      type="tel"
-                      value={formData.phone}
-                      onChange={handleInputChange}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Security */}
-              <div className="space-y-2">
-                <h3 className="text-lg font-medium">Security</h3>
-                <div className="space-y-2">
-                  <Label htmlFor="password">New Password (optional)</Label>
-                  <div className="relative">
-                    <Input
-                      id="password"
-                      name="password"
-                      type={showPassword ? "text" : "password"}
-                      value={formData.password}
-                      onChange={handleInputChange}
-                      placeholder="Leave blank to keep current password"
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="absolute right-2 top-1/2 -translate-y-1/2"
-                      onClick={() => setShowPassword(!showPassword)}
-                    >
-                      {showPassword ? <EyeOffIcon className="h-4 w-4" /> : <EyeIcon className="h-4 w-4" />}
-                    </Button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Preferences */}
-              <div className="space-y-2">
-                <h3 className="text-lg font-medium">Preferences</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="preferredCurrency">Preferred Currency</Label>
-                    <Input
-                      id="preferredCurrency"
-                      name="preferredCurrency"
-                      value={formData.preferredCurrency}
-                      onChange={handleInputChange}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="timezone">Timezone</Label>
-                    <Input
-                      id="timezone"
-                      name="timezone"
-                      value={formData.timezone}
-                      onChange={handleInputChange}
-                    />
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-            <CardFooter className="flex flex-col items-start gap-4">
-              {error && (
-                <div className="w-full p-3 rounded-md bg-destructive/15 text-destructive text-sm">
-                  {error}
-                </div>
-              )}
-              {success && (
-                <div className="w-full p-3 rounded-md bg-green-100 text-green-800 text-sm dark:bg-green-900/50 dark:text-green-400">
-                  {success}
-                </div>
-              )}
-              <div className="w-full flex justify-end">
-                <Button type="submit" disabled={loading}>
-                  {loading ? "Saving..." : "Save Changes"}
-                </Button>
-              </div>
-            </CardFooter>
-          </form>
-        </Card>
-      </div>
+  const navigationActions = (
+    <div className="flex gap-2 flex-wrap">
+      <Link href="/profile/professional-history">
+        <Button variant="outline" className="flex items-center gap-2">
+          <History className="h-4 w-4" />
+          Professional History
+        </Button>
+      </Link>
+      <Link href="/profile/skills">
+        <Button variant="outline" className="flex items-center gap-2">
+          <Briefcase className="h-4 w-4" />
+          Skills
+        </Button>
+      </Link>
+      <Link href="/profile/resumes">
+        <Button variant="outline" className="flex items-center gap-2">
+          <ScrollText className="h-4 w-4" />
+          Resumes
+        </Button>
+      </Link>
+      <Link href="/profile/settings">
+        <Button variant="outline" className="flex items-center gap-2">
+          <Settings2 className="h-4 w-4" />
+          Settings
+        </Button>
+      </Link>
     </div>
+  )
+
+  return (
+    <PageLayout
+      title="Profile"
+      description="Manage your personal information and profile settings"
+      actions={navigationActions}
+    >
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <Section title="Personal Information">
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="firstName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>First Name</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="lastName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Last Name</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          </Section>
+
+          <Section title="Professional Information">
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="jobTitle"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Job Title</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="industry"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Industry</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="yearsExperience"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Years of Experience</FormLabel>
+                    <FormControl>
+                      <Input {...field} type="number" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          </Section>
+
+          <Section title="Social Links">
+            <div className="space-y-4">
+              <FormField
+                control={form.control}
+                name="linkedinUrl"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>LinkedIn URL</FormLabel>
+                    <FormControl>
+                      <Input {...field} type="url" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="githubUrl"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>GitHub URL</FormLabel>
+                    <FormControl>
+                      <Input {...field} type="url" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="portfolioUrl"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Portfolio URL</FormLabel>
+                    <FormControl>
+                      <Input {...field} type="url" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          </Section>
+
+          {error && (
+            <div className="rounded-md bg-destructive/15 p-3 text-sm text-destructive">
+              {error}
+            </div>
+          )}
+          {success && (
+            <div className="rounded-md bg-green-500/15 p-3 text-sm text-green-500">
+              {success}
+            </div>
+          )}
+
+          <div className="flex justify-end gap-2">
+            <Button
+              type="submit"
+              disabled={loading}
+            >
+              {loading ? "Saving..." : "Save Changes"}
+            </Button>
+          </div>
+        </form>
+      </Form>
+    </PageLayout>
   )
 }
 
