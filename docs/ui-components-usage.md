@@ -5,12 +5,14 @@ This guide provides detailed instructions on how to use the JobVault UI componen
 ## Table of Contents
 
 1. [Getting Started](#getting-started)
-2. [Page Layout](#page-layout)
-3. [Sections](#sections)
-4. [Cards](#cards)
-5. [Timeline Cards](#timeline-cards)
-6. [Common Patterns](#common-patterns)
-7. [Migration Guide](#migration-guide)
+2. [Library Integration](#library-integration)
+3. [Page Layout](#page-layout)
+4. [Sections](#sections)
+5. [Cards](#cards)
+6. [Timeline Cards](#timeline-cards)
+7. [Common Patterns](#common-patterns)
+8. [Form Patterns](#form-patterns)
+9. [Migration Guide](#migration-guide)
 
 ## Getting Started
 
@@ -21,6 +23,157 @@ import { PageLayout } from '@/components/ui/page-layout'
 import { Section } from '@/components/ui/section'
 import { ContentCard } from '@/components/ui/card-content'
 import { TimelineCard } from '@/components/ui/timeline-card'
+```
+
+## Library Integration
+
+JobVault uses several UI libraries that work together to provide a comprehensive component system:
+
+### Core Libraries
+
+1. **shadcn/ui & Radix UI**
+   - Base components (`Button`, `Card`, `Dialog`, etc.)
+   - Accessible primitives
+   - Theme integration
+   ```tsx
+   import { Button } from '@/components/ui/button'
+   import { Card } from '@/components/ui/card'
+   import * as Dialog from '@radix-ui/react-dialog'
+   ```
+
+2. **Material-UI (MUI)**
+   - Complex components (DataGrid, etc.)
+   - Used selectively for specific features
+   ```tsx
+   import { Timeline } from '@mui/lab'
+   import { DataGrid } from '@mui/x-data-grid'
+   ```
+
+3. **Tailwind CSS**
+   - Utility classes for styling
+   - Theme customization
+   - Responsive design
+   ```tsx
+   import { cn } from '@/lib/utils'
+   
+   <div className={cn(
+     'flex items-center',
+     'md:space-x-4',
+     className
+   )}>
+   ```
+
+### Form Handling
+
+We use `react-hook-form` with `zod` for form validation:
+
+```tsx
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import * as z from 'zod'
+
+const formSchema = z.object({
+  title: z.string().min(1, 'Required'),
+  description: z.string(),
+})
+
+export function MyForm() {
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      title: '',
+      description: '',
+    },
+  })
+
+  return (
+    <Form {...form}>
+      <FormField
+        control={form.control}
+        name="title"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Title</FormLabel>
+            <FormControl>
+              <Input {...field} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+    </Form>
+  )
+}
+```
+
+### Icons
+
+We use Lucide icons consistently throughout the app:
+
+```tsx
+import { Plus, Pencil, Trash2 } from 'lucide-react'
+
+<Button>
+  <Plus className="h-4 w-4 mr-2" />
+  Add Item
+</Button>
+```
+
+### Specialized Components
+
+1. **Carousel (embla-carousel-react)**
+   ```tsx
+   import { Carousel } from '@/components/ui/carousel'
+   
+   <Carousel>
+     <CarouselContent>
+       {items.map((item) => (
+         <CarouselItem key={item.id}>
+           <ContentCard {...item} />
+         </CarouselItem>
+       ))}
+     </CarouselContent>
+   </Carousel>
+   ```
+
+2. **Date Picker (react-day-picker)**
+   ```tsx
+   import { Calendar } from '@/components/ui/calendar'
+   
+   <Calendar
+     mode="single"
+     selected={date}
+     onSelect={setDate}
+     className="rounded-md border"
+   />
+   ```
+
+3. **Charts (recharts)**
+   ```tsx
+   import { AreaChart, Area, XAxis, YAxis } from 'recharts'
+   
+   <AreaChart data={data}>
+     <Area dataKey="value" />
+     <XAxis dataKey="date" />
+     <YAxis />
+   </AreaChart>
+   ```
+
+### Theme Integration
+
+Our components use a consistent theme system that works across libraries:
+
+```tsx
+// Using theme tokens
+<div className="bg-background text-foreground">
+  <h1 className="text-primary">Title</h1>
+  <p className="text-muted-foreground">Description</p>
+</div>
+
+// Dark mode support
+import { useTheme } from 'next-themes'
+
+const { theme, setTheme } = useTheme()
 ```
 
 ## Page Layout
@@ -246,6 +399,104 @@ Extends `ContentCard` props with:
     {/* Project list */}
   )}
 </Section>
+```
+
+## Form Patterns
+
+### Basic Form Layout
+
+```tsx
+import { Form } from '@/components/ui/form'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
+
+<Form {...form}>
+  <div className="space-y-4">
+    <FormField
+      control={form.control}
+      name="title"
+      render={({ field }) => (
+        <FormItem>
+          <FormLabel>Title</FormLabel>
+          <FormControl>
+            <Input {...field} />
+          </FormControl>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
+    <Button type="submit">Submit</Button>
+  </div>
+</Form>
+```
+
+### Form with Multiple Sections
+
+```tsx
+<Form {...form}>
+  <div className="space-y-6">
+    <Section title="Basic Information">
+      <div className="space-y-4">
+        <FormField
+          control={form.control}
+          name="title"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Title</FormLabel>
+              <FormControl>
+                <Input {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="description"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Description</FormLabel>
+              <FormControl>
+                <Textarea {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      </div>
+    </Section>
+    
+    <Section title="Additional Details">
+      <div className="space-y-4">
+        <FormField
+          control={form.control}
+          name="date"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Date</FormLabel>
+              <FormControl>
+                <Calendar
+                  mode="single"
+                  selected={field.value}
+                  onSelect={field.onChange}
+                  className="rounded-md border"
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      </div>
+    </Section>
+    
+    <div className="flex justify-end gap-2">
+      <Button variant="outline" onClick={onCancel}>
+        Cancel
+      </Button>
+      <Button type="submit">Submit</Button>
+    </div>
+  </div>
+</Form>
 ```
 
 ## Migration Guide
