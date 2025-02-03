@@ -36,6 +36,7 @@ import { jobsService } from '@/lib/jobs'
 import { StarRating } from "@/components/StarRating"
 import type { Job, JobStatus } from '@/types'
 import { parseISO, isValid } from 'date-fns'
+import { useToast } from "@/hooks/use-toast"
 
 const formSchema = z.object({
   position: z.string().min(1, "Position is required"),
@@ -68,16 +69,17 @@ interface AddJobModalProps {
 export function AddJobModal({ onJobAdded }: AddJobModalProps) {
   const [open, setOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const { toast } = useToast()
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      position: '',
-      company: '',
-      description: '',
-      max_salary: '',
-      location: '',
-      status: 'BOOKMARKED',
+      position: "",
+      company: "",
+      description: "",
+      max_salary: "",
+      location: "",
+      status: "BOOKMARKED",
       rating: 0,
       deadline: null,
       date_applied: null,
@@ -88,7 +90,6 @@ export function AddJobModal({ onJobAdded }: AddJobModalProps) {
   async function onSubmit(values: FormValues) {
     try {
       setIsSubmitting(true)
-      console.log('1. Form submitted with values:', values)
       
       // Convert empty strings to null for date fields
       const formattedValues = {
@@ -99,48 +100,31 @@ export function AddJobModal({ onJobAdded }: AddJobModalProps) {
         rating: Number(values.rating), // Ensure rating is a number
       }
       
-      console.log('2. Formatted values:', formattedValues)
-      console.log('3. Calling jobsService.create...')
+      await jobsService.create(formattedValues)
       
-      let result;
-      try {
-        result = await jobsService.create(formattedValues)
-        console.log('4. Job created successfully:', result)
-      } catch (createError) {
-        console.error('4a. Error from jobsService.create:', createError)
-        throw createError
-      }
+      // Show success toast
+      toast({
+        title: "Job Added",
+        description: "The job has been successfully added to your list.",
+      })
       
-      console.log('5. Closing modal and resetting form...')
       setOpen(false)
       form.reset()
-      
-      console.log('6. Calling onJobAdded callback...')
       onJobAdded?.()
       
-      console.log('7. Job creation process completed successfully')
     } catch (error) {
-      console.error('8. Error in form submission:', error)
-      
-      // Log the full error object
-      if (error instanceof Error) {
-        console.error('9. Error details:', {
-          message: error.message,
-          name: error.name,
-          stack: error.stack,
-        })
-      } else {
-        console.error('9. Unknown error type:', error)
-      }
-      
-      // Show a more detailed error message to the user
-      const errorMessage = error instanceof Error ? 
-        `Failed to create job: ${error.message}` : 
-        'Failed to create job: Unknown error'
-      console.error('10. Showing error message to user:', errorMessage)
-      alert(errorMessage)
+      // Handle error with proper error message
+      const message = error instanceof Error && 'errorResult' in error
+        ? error.message // Use our handled error message
+        : 'Failed to add job. Please try again.'
+
+      // Show error toast
+      toast({
+        title: "Error",
+        description: message,
+        variant: "destructive",
+      })
     } finally {
-      console.log('11. Setting isSubmitting to false')
       setIsSubmitting(false)
     }
   }
@@ -148,140 +132,56 @@ export function AddJobModal({ onJobAdded }: AddJobModalProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="gap-2">
-          <Plus className="h-4 w-4" />
-          Add a New Job
+        <Button>
+          <Plus className="mr-2 h-4 w-4" />
+          Add Job
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle>Add New Job</DialogTitle>
           <DialogDescription>
-            Enter the details of the new job opportunity. Click save when you're done.
+            Add a new job to track in your job search.
           </DialogDescription>
         </DialogHeader>
-
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <div className="grid grid-cols-2 gap-6">
-              {/* Left Column */}
-              <div className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="position"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Position</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Job title" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="company"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Company</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Company name" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="location"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Location</FormLabel>
-                      <FormControl>
-                        <Input placeholder="City, State or Remote" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              {/* Right Column */}
-              <div className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="rating"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Rating</FormLabel>
-                      <FormControl>
-                        <StarRating
-                          rating={field.value}
-                          onRatingChange={field.onChange}
-                          editable
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="status"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Status</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select a status" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="BOOKMARKED">Bookmarked</SelectItem>
-                          <SelectItem value="APPLYING">Applying</SelectItem>
-                          <SelectItem value="APPLIED">Applied</SelectItem>
-                          <SelectItem value="INTERVIEWING">Interviewing</SelectItem>
-                          <SelectItem value="NEGOTIATING">Negotiating</SelectItem>
-                          <SelectItem value="ACCEPTED">Accepted</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="max_salary"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Maximum Salary</FormLabel>
-                      <FormControl>
-                        <Input placeholder="e.g. $120,000" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-            </div>
-
-            {/* Full Width Fields */}
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="position"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Position</FormLabel>
+                  <FormControl>
+                    <Input placeholder="e.g. Senior Software Engineer" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="company"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Company</FormLabel>
+                  <FormControl>
+                    <Input placeholder="e.g. Tech Corp" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <FormField
               control={form.control}
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Job Description</FormLabel>
+                  <FormLabel>Description</FormLabel>
                   <FormControl>
-                    <Textarea
-                      placeholder="Enter the job description..."
-                      className="min-h-[200px]"
+                    <Textarea 
+                      placeholder="Job description or notes"
+                      className="resize-none"
                       {...field}
                     />
                   </FormControl>
@@ -289,27 +189,89 @@ export function AddJobModal({ onJobAdded }: AddJobModalProps) {
                 </FormItem>
               )}
             />
-
-            {/* Date Fields */}
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="max_salary"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Max Salary</FormLabel>
+                    <FormControl>
+                      <Input type="number" placeholder="e.g. 120000" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="location"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Location</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g. Remote, New York" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            <FormField
+              control={form.control}
+              name="status"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Status</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a status" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="BOOKMARKED">Bookmarked</SelectItem>
+                      <SelectItem value="APPLYING">Applying</SelectItem>
+                      <SelectItem value="APPLIED">Applied</SelectItem>
+                      <SelectItem value="INTERVIEWING">Interviewing</SelectItem>
+                      <SelectItem value="NEGOTIATING">Negotiating</SelectItem>
+                      <SelectItem value="ACCEPTED">Accepted</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="rating"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Rating</FormLabel>
+                  <FormControl>
+                    <StarRating
+                      rating={field.value}
+                      onRatingChange={field.onChange}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <div className="grid grid-cols-3 gap-4">
               <FormField
                 control={form.control}
                 name="deadline"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Application Deadline</FormLabel>
+                    <FormLabel>Deadline</FormLabel>
                     <FormControl>
-                      <Input 
-                        type="date"
-                        {...field}
-                        value={field.value || ''}
-                      />
+                      <Input type="date" {...field} value={field.value || ''} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-
               <FormField
                 control={form.control}
                 name="date_applied"
@@ -317,45 +279,27 @@ export function AddJobModal({ onJobAdded }: AddJobModalProps) {
                   <FormItem>
                     <FormLabel>Date Applied</FormLabel>
                     <FormControl>
-                      <Input 
-                        type="date"
-                        {...field}
-                        value={field.value || ''}
-                      />
+                      <Input type="date" {...field} value={field.value || ''} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-
               <FormField
                 control={form.control}
                 name="follow_up"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Follow-up Date</FormLabel>
+                    <FormLabel>Follow Up</FormLabel>
                     <FormControl>
-                      <Input 
-                        type="date"
-                        {...field}
-                        value={field.value || ''}
-                      />
+                      <Input type="date" {...field} value={field.value || ''} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
             </div>
-
             <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setOpen(false)}
-                disabled={isSubmitting}
-              >
-                Cancel
-              </Button>
               <Button type="submit" disabled={isSubmitting}>
                 {isSubmitting ? "Adding..." : "Add Job"}
               </Button>

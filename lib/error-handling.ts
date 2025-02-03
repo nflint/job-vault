@@ -7,6 +7,43 @@ export const ErrorCodes = {
   AUTH_UPDATE_PASSWORD: 'AUTH_UPDATE_PASSWORD',
   AUTH_GET_USER: 'AUTH_GET_USER',
   AUTH_GET_SESSION: 'AUTH_GET_SESSION',
+  
+  // Job management
+  JOB_CREATE: 'JOB_CREATE',
+  JOB_UPDATE: 'JOB_UPDATE',
+  JOB_DELETE: 'JOB_DELETE',
+  JOB_LIST: 'JOB_LIST',
+  
+  // Resume management
+  RESUME_CREATE: 'RESUME_CREATE',
+  RESUME_UPDATE: 'RESUME_UPDATE',
+  RESUME_DELETE: 'RESUME_DELETE',
+  RESUME_EXPORT: 'RESUME_EXPORT',
+  RESUME_SECTION_UPDATE: 'RESUME_SECTION_UPDATE',
+  
+  // Profile management
+  PROFILE_UPDATE: 'PROFILE_UPDATE',
+  PROFILE_GET: 'PROFILE_GET',
+  
+  // Professional history
+  HISTORY_CREATE: 'HISTORY_CREATE',
+  HISTORY_UPDATE: 'HISTORY_UPDATE',
+  HISTORY_DELETE: 'HISTORY_DELETE',
+  
+  // Education
+  EDUCATION_CREATE: 'EDUCATION_CREATE',
+  EDUCATION_UPDATE: 'EDUCATION_UPDATE',
+  EDUCATION_DELETE: 'EDUCATION_DELETE',
+  
+  // Projects
+  PROJECT_CREATE: 'PROJECT_CREATE',
+  PROJECT_UPDATE: 'PROJECT_UPDATE',
+  PROJECT_DELETE: 'PROJECT_DELETE',
+  
+  // Certifications
+  CERT_CREATE: 'CERT_CREATE',
+  CERT_UPDATE: 'CERT_UPDATE',
+  CERT_DELETE: 'CERT_DELETE',
 } as const
 
 type ErrorCode = typeof ErrorCodes[keyof typeof ErrorCodes]
@@ -44,6 +81,128 @@ const ERROR_MESSAGES: Record<ErrorCode, Record<string, string>> = {
   },
   AUTH_GET_SESSION: {
     'Invalid JWT': 'Your session has expired. Please sign in again',
+  },
+  
+  // Job management messages
+  JOB_CREATE: {
+    'Invalid input': 'Please check the job details and try again',
+    'Database error': 'Unable to save the job. Please try again',
+    'Unauthorized': 'You must be signed in to create a job',
+  },
+  JOB_UPDATE: {
+    'Job not found': 'The job you are trying to update does not exist',
+    'Invalid input': 'Please check the job details and try again',
+    'Unauthorized': 'You do not have permission to update this job',
+  },
+  JOB_DELETE: {
+    'Job not found': 'The job you are trying to delete does not exist',
+    'Unauthorized': 'You do not have permission to delete this job',
+  },
+  JOB_LIST: {
+    'Unauthorized': 'You must be signed in to view jobs',
+    'Database error': 'Unable to load jobs. Please try again',
+  },
+
+  // Resume management messages
+  RESUME_CREATE: {
+    'Invalid input': 'Please check the resume details and try again',
+    'Database error': 'Unable to save the resume. Please try again',
+    'Unauthorized': 'You must be signed in to create a resume',
+  },
+  RESUME_UPDATE: {
+    'Resume not found': 'The resume you are trying to update does not exist',
+    'Invalid input': 'Please check the resume details and try again',
+    'Unauthorized': 'You do not have permission to update this resume',
+  },
+  RESUME_DELETE: {
+    'Resume not found': 'The resume you are trying to delete does not exist',
+    'Unauthorized': 'You do not have permission to delete this resume',
+  },
+  RESUME_EXPORT: {
+    'Resume not found': 'The resume you are trying to export does not exist',
+    'PDF generation failed': 'Unable to generate PDF. Please try again',
+    'Unauthorized': 'You do not have permission to export this resume',
+  },
+  RESUME_SECTION_UPDATE: {
+    'Section not found': 'The section you are trying to update does not exist',
+    'Invalid input': 'Please check the section details and try again',
+    'Unauthorized': 'You do not have permission to update this section',
+  },
+
+  // Profile management messages
+  PROFILE_UPDATE: {
+    'Invalid input': 'Please check your profile details and try again',
+    'Database error': 'Unable to save your profile. Please try again',
+    'Email already exists': 'This email is already associated with another account',
+    'Unauthorized': 'You must be signed in to update your profile',
+  },
+  PROFILE_GET: {
+    'Profile not found': 'Unable to load your profile. Please try again',
+    'Unauthorized': 'You must be signed in to view your profile',
+  },
+
+  // Professional history messages
+  HISTORY_CREATE: {
+    'Invalid input': 'Please check the history details and try again',
+    'Database error': 'Unable to save the history. Please try again',
+    'Unauthorized': 'You must be signed in to create a history',
+  },
+  HISTORY_UPDATE: {
+    'History not found': 'The history you are trying to update does not exist',
+    'Invalid input': 'Please check the history details and try again',
+    'Unauthorized': 'You do not have permission to update this history',
+  },
+  HISTORY_DELETE: {
+    'History not found': 'The history you are trying to delete does not exist',
+    'Unauthorized': 'You do not have permission to delete this history',
+  },
+
+  // Education messages
+  EDUCATION_CREATE: {
+    'Invalid input': 'Please check the education details and try again',
+    'Database error': 'Unable to save the education entry. Please try again',
+    'Unauthorized': 'You must be signed in to add education',
+  },
+  EDUCATION_UPDATE: {
+    'Education not found': 'The education entry you are trying to update does not exist',
+    'Invalid input': 'Please check the education details and try again',
+    'Unauthorized': 'You do not have permission to update this education entry',
+  },
+  EDUCATION_DELETE: {
+    'Education not found': 'The education entry you are trying to delete does not exist',
+    'Unauthorized': 'You do not have permission to delete this education entry',
+  },
+
+  // Project messages
+  PROJECT_CREATE: {
+    'Invalid input': 'Please check the project details and try again',
+    'Database error': 'Unable to save the project. Please try again',
+    'Unauthorized': 'You must be signed in to create a project',
+  },
+  PROJECT_UPDATE: {
+    'Project not found': 'The project you are trying to update does not exist',
+    'Invalid input': 'Please check the project details and try again',
+    'Unauthorized': 'You do not have permission to update this project',
+  },
+  PROJECT_DELETE: {
+    'Project not found': 'The project you are trying to delete does not exist',
+    'Unauthorized': 'You do not have permission to delete this project',
+  },
+
+  // Certification messages
+  CERT_CREATE: {
+    'Invalid input': 'Please check the certification details and try again',
+    'Database error': 'Unable to save the certification. Please try again',
+    'Unauthorized': 'You must be signed in to add a certification',
+  },
+  CERT_UPDATE: {
+    'Certification not found': 'The certification you are trying to update does not exist',
+    'Invalid input': 'Please check the certification details and try again',
+    'Unauthorized': 'You do not have permission to update this certification',
+  },
+  CERT_DELETE: {
+    'Certification not found': 'The certification you are trying to delete does not exist',
+    'Unauthorized': 'You do not have permission to delete this certification',
   },
 }
 

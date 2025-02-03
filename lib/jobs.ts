@@ -1,20 +1,29 @@
 import { supabase } from './supabase'
-import type { Job } from '@/types'
+import { handleClientError, ErrorCodes } from './error-handling'
+import type { Job, JobStatus } from '@/types'
 
-export const jobsService = {
-  async list() {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) throw new Error('Not authenticated')
+class JobsService {
+  async list(): Promise<Job[]> {
+    try {
+      const { data, error } = await supabase
+        .from('jobs')
+        .select('*')
+        .order('created_at', { ascending: false })
 
-    const { data, error } = await supabase
-      .from('jobs')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false })
+      if (error) {
+        const errorResult = handleClientError(error, ErrorCodes.JOB_LIST)
+        throw Object.assign(new Error(errorResult.message), { errorResult })
+      }
 
-    if (error) throw error
-    return data as Job[]
-  },
+      return data || []
+    } catch (error) {
+      if (error instanceof Error && 'errorResult' in error) {
+        throw error // Re-throw already handled errors
+      }
+      const errorResult = handleClientError(error, ErrorCodes.JOB_LIST)
+      throw Object.assign(new Error(errorResult.message), { errorResult })
+    }
+  }
 
   async get(id: number) {
     const { data: { user } } = await supabase.auth.getUser()
@@ -29,97 +38,102 @@ export const jobsService = {
 
     if (error) throw error
     return data as Job
-  },
+  }
 
   async create(job: Omit<Job, 'id' | 'user_id' | 'created_at' | 'updated_at' | 'date_saved'>) {
     try {
-      console.log('1. Starting job creation...')
-      
-      let user;
-      try {
-        const auth = await supabase.auth.getUser()
-        console.log('2. Auth response:', auth)
-        user = auth.data.user
-      } catch (authError) {
-        console.error('2a. Auth error:', authError)
-        throw new Error('Authentication failed')
+      // Get current user
+      const { data: { user }, error: userError } = await supabase.auth.getUser()
+      if (userError) {
+        const errorResult = handleClientError(userError, ErrorCodes.JOB_CREATE)
+        throw Object.assign(new Error(errorResult.message), { errorResult })
       }
-
       if (!user) {
-        console.error('3. No user found in auth response')
-        throw new Error('Not authenticated')
-      }
-      console.log('4. User authenticated:', user.id)
-
-      const jobData = { 
-        ...job, 
-        user_id: user.id,
-        date_saved: new Date().toISOString() 
-      }
-      console.log('5. Prepared job data:', jobData)
-
-      let response;
-      try {
-        response = await supabase
-          .from('jobs')
-          .insert([jobData])
-          .select()
-          .single()
-        console.log('6. Supabase response:', response)
-      } catch (insertError) {
-        console.error('6a. Insert error:', insertError)
-        throw new Error('Database insert failed')
+        const errorResult = handleClientError(new Error('Unauthorized'), ErrorCodes.JOB_CREATE)
+        throw Object.assign(new Error(errorResult.message), { errorResult })
       }
 
-      if (response.error) {
-        console.error('7. Supabase error:', {
-          message: response.error.message,
-          details: response.error.details,
-          hint: response.error.hint,
-          code: response.error.code
-        })
-        throw new Error(`Database error: ${response.error.message}`)
+      const { data, error } = await supabase
+        .from('jobs')
+        .insert([{
+          ...job,
+          user_id: user.id,
+          date_saved: new Date().toISOString()
+        }])
+        .select()
+        .single()
+
+      if (error) {
+        const errorResult = handleClientError(error, ErrorCodes.JOB_CREATE)
+        throw Object.assign(new Error(errorResult.message), { errorResult })
       }
 
-      if (!response.data) {
-        console.error('8. No data returned from insert')
-        throw new Error('No data returned from insert')
+      if (!data) {
+        const errorResult = handleClientError(new Error('No data returned from insert'), ErrorCodes.JOB_CREATE)
+        throw Object.assign(new Error(errorResult.message), { errorResult })
       }
 
-      console.log('9. Job created successfully:', response.data)
-      return response.data as Job
+      return data
     } catch (error) {
-      console.error('10. Final error in create job:', error)
-      throw error
+      if (error instanceof Error && 'errorResult' in error) {
+        throw error // Re-throw already handled errors
+      }
+      const errorResult = handleClientError(error, ErrorCodes.JOB_CREATE)
+      throw Object.assign(new Error(errorResult.message), { errorResult })
     }
-  },
-
-  async update(id: number, updates: Partial<Omit<Job, 'id' | 'user_id' | 'created_at' | 'updated_at'>>) {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) throw new Error('Not authenticated')
-
-    const { data, error } = await supabase
-      .from('jobs')
-      .update(updates)
-      .eq('id', id)
-      .eq('user_id', user.id)
-      .select()
-      .single()
-
-    if (error) throw error
-    return data as Job
-  },
-
-  async delete(id: number) {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) throw new Error('Not authenticated')
-
-    const { error } = await supabase
-      .from('jobs')
-      .delete()
-      .eq('id', id)
-      .eq('user_id', user.id)
-
-    if (error) throw error
   }
-} 
+
+  async update(id: string, updates: Partial<Omit<Job, 'id' | 'user_id' | 'created_at' | 'updated_at'>>) {
+    try {
+      const { data, error } = await supabase
+        .from('jobs')
+        .update({
+          ...updates,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', id)
+        .select()
+        .single()
+
+      if (error) {
+        const errorResult = handleClientError(error, ErrorCodes.JOB_UPDATE)
+        throw Object.assign(new Error(errorResult.message), { errorResult })
+      }
+
+      if (!data) {
+        const errorResult = handleClientError(new Error('Job not found'), ErrorCodes.JOB_UPDATE)
+        throw Object.assign(new Error(errorResult.message), { errorResult })
+      }
+
+      return data
+    } catch (error) {
+      if (error instanceof Error && 'errorResult' in error) {
+        throw error // Re-throw already handled errors
+      }
+      const errorResult = handleClientError(error, ErrorCodes.JOB_UPDATE)
+      throw Object.assign(new Error(errorResult.message), { errorResult })
+    }
+  }
+
+  async delete(id: string) {
+    try {
+      const { error } = await supabase
+        .from('jobs')
+        .delete()
+        .eq('id', id)
+
+      if (error) {
+        const errorResult = handleClientError(error, ErrorCodes.JOB_DELETE)
+        throw Object.assign(new Error(errorResult.message), { errorResult })
+      }
+    } catch (error) {
+      if (error instanceof Error && 'errorResult' in error) {
+        throw error // Re-throw already handled errors
+      }
+      const errorResult = handleClientError(error, ErrorCodes.JOB_DELETE)
+      throw Object.assign(new Error(errorResult.message), { errorResult })
+    }
+  }
+}
+
+export const jobsService = new JobsService() 

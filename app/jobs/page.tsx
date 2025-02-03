@@ -30,6 +30,9 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import Link from "next/link"
+import { useToast } from "@/hooks/use-toast"
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert"
+import { AlertCircle } from 'lucide-react'
 
 interface DeleteConfirmDialogProps {
   jobId: number
@@ -81,21 +84,54 @@ export default function JobsPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [user, setUser] = useState<any>(null)
+  const { toast } = useToast()
 
-  async function handleUpdateJob(updatedJob: Job) {
+  const loadJobs = async () => {
     try {
-      console.log('Attempting to update job:', updatedJob)
-      // Exclude id, user_id, created_at, and updated_at from the update
-      const { id, user_id, created_at, updated_at, ...updateData } = updatedJob
-      await jobsService.update(id, updateData)
-      setJobs(prev => prev.map(job => job.id === id ? updatedJob : job))
-    } catch (err) {
-      console.error('Error updating job:', err)
-      const errorMessage = err instanceof Error ? err.message : 'Failed to update job'
-      console.error('Full error details:', err)
-      setError(errorMessage)
-      // Show error for 3 seconds then clear it
-      setTimeout(() => setError(null), 3000)
+      setLoading(true)
+      setError(null)
+      const data = await jobsService.list()
+      setJobs(data)
+    } catch (error) {
+      const message = error instanceof Error && 'errorResult' in error
+        ? error.message // Use our handled error message
+        : 'Failed to load jobs. Please try again.'
+      
+      setError(message)
+      
+      toast({
+        title: "Error",
+        description: message,
+        variant: "destructive",
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleUpdateJob = async (updatedJob: Job) => {
+    try {
+      const { id, user_id, created_at, updated_at, date_saved, ...updates } = updatedJob
+      await jobsService.update(id, updates)
+      
+      // Show success toast
+      toast({
+        title: "Job Updated",
+        description: "The job has been successfully updated.",
+      })
+      
+      // Reload jobs to get latest data
+      await loadJobs()
+    } catch (error) {
+      const message = error instanceof Error && 'errorResult' in error
+        ? error.message // Use our handled error message
+        : 'Failed to update job. Please try again.'
+      
+      toast({
+        title: "Error",
+        description: message,
+        variant: "destructive",
+      })
     }
   }
 
@@ -261,23 +297,6 @@ export default function JobsPage() {
     })
   }, [])
 
-  async function loadJobs() {
-    try {
-      setLoading(true)
-      const data = await jobsService.list()
-      setJobs(data)
-    } catch (err) {
-      console.error('Error loading jobs:', err)
-      setError(err instanceof Error ? err.message : 'Failed to load jobs')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  function getColumnId(column: ColumnDef<Job, any>): string {
-    return column.id || column.accessorKey || 'column'
-  }
-
   if (!user) {
     return <div className="p-6">Redirecting to login...</div>
   }
@@ -285,14 +304,10 @@ export default function JobsPage() {
   if (loading) {
     return (
       <div className="p-6">
-        <div className="space-y-4">
-          <div className="skeleton h-20"></div>
-          <div className="skeleton h-10 w-1/4"></div>
-          <div className="space-y-3">
-            {[...Array(5)].map((_, i) => (
-              <div key={i} className="skeleton h-12"></div>
-            ))}
-          </div>
+        <div className="animate-pulse space-y-4">
+          <div className="h-8 bg-gray-200 rounded w-1/4"></div>
+          <div className="h-32 bg-gray-200 rounded"></div>
+          <div className="h-64 bg-gray-200 rounded"></div>
         </div>
       </div>
     )
@@ -301,9 +316,11 @@ export default function JobsPage() {
   if (error) {
     return (
       <div className="p-6">
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-          Error: {error}
-        </div>
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Error</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
       </div>
     )
   }
