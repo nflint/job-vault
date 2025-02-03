@@ -1,3 +1,9 @@
+/**
+ * @fileoverview Error handling utilities for client-side error management.
+ * This module provides a centralized error handling system with typed error codes,
+ * consistent error messages, and developer-friendly error reporting.
+ */
+
 // Error codes for client-side errors
 export const ErrorCodes = {
   // General errors
@@ -31,14 +37,41 @@ export const ErrorCodes = {
   PROJECT_LIST_FAILED: 'PROJECT_LIST_FAILED',
 } as const
 
+/**
+ * Type representing valid error codes from the ErrorCodes enum.
+ * @typedef {keyof typeof ErrorCodes} ErrorCode
+ */
 export type ErrorCode = keyof typeof ErrorCodes
 
+/**
+ * Interface representing the structure of an error result.
+ * @interface
+ * @property {ErrorCode} code - The error code identifying the type of error
+ * @property {string} message - User-friendly error message
+ * @property {string} [devMessage] - Optional detailed message for developers
+ */
 export interface ErrorResult {
   code: ErrorCode
   message: string
   devMessage?: string
 }
 
+/**
+ * Handles and normalizes client-side errors into a consistent format.
+ * This function processes various types of errors and converts them into
+ * a standardized ErrorResult format.
+ *
+ * @param {unknown} error - The error to be handled
+ * @returns {ErrorResult} A normalized error result object
+ * 
+ * @example
+ * try {
+ *   // Some operation that might fail
+ * } catch (error) {
+ *   const handled = handleClientError(error);
+ *   console.error(handled.message);
+ * }
+ */
 export function handleClientError(error: unknown): ErrorResult {
   console.error('[ERROR_HANDLER]', error)
 
@@ -94,6 +127,17 @@ export function handleClientError(error: unknown): ErrorResult {
   }
 }
 
+/**
+ * Retrieves a user-friendly error message for a given error code.
+ * Maps error codes to pre-defined human-readable messages.
+ *
+ * @param {ErrorCode} code - The error code to get the message for
+ * @returns {string} A user-friendly error message
+ * 
+ * @example
+ * const message = getErrorMessage('DATABASE_ERROR');
+ * // Returns: "A database error occurred. Please try again."
+ */
 export function getErrorMessage(code: ErrorCode): string {
   switch (code) {
     // General errors
