@@ -8,14 +8,21 @@ import Link from 'next/link'
 import { Eye, EyeOff } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 
+interface ErrorMessage {
+  type: 'error' | 'success'
+  text: string
+  details?: string
+}
+
 export default function LoginPage() {
   const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
-  const [message, setMessage] = useState<{ type: 'error' | 'success', text: string } | null>(null)
+  const [message, setMessage] = useState<ErrorMessage | null>(null)
   const [loading, setLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const showDetails = process.env.NEXT_PUBLIC_SHOW_DETAILED_ERRORS === 'true'
 
   useEffect(() => {
     // Check if user is already authenticated
@@ -37,10 +44,20 @@ export default function LoginPage() {
       router.push('/jobs')
     } catch (err) {
       console.error('Error signing in:', err)
-      setMessage({
-        type: 'error',
-        text: err instanceof Error ? err.message : 'Failed to sign in'
-      })
+      if (err instanceof Error) {
+        setMessage({
+          type: 'error',
+          text: err.message,
+          details: showDetails && 'errorResult' in err 
+            ? (err as any).errorResult.devMessage 
+            : undefined
+        })
+      } else {
+        setMessage({
+          type: 'error',
+          text: 'Failed to sign in'
+        })
+      }
     } finally {
       setIsSubmitting(false)
     }
@@ -128,7 +145,12 @@ export default function LoginPage() {
             <div className={`rounded-md p-4 ${
               message.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'
             }`}>
-              {message.text}
+              <p className="font-medium">{message.text}</p>
+              {message.details && (
+                <pre className="mt-2 text-sm whitespace-pre-wrap font-mono bg-red-100/50 p-2 rounded">
+                  {message.details}
+                </pre>
+              )}
             </div>
           )}
 

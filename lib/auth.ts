@@ -1,5 +1,5 @@
 import { supabase } from './supabase'
-import { handleClientError, ErrorCodes } from './error-handling'
+import { handleClientError, ErrorCodes, type ErrorResult } from './error-handling'
 import type { AuthChangeEvent, Session, AuthError } from '@supabase/supabase-js'
 
 export interface AuthUser {
@@ -16,7 +16,10 @@ class AuthService {
         password,
       })
 
-      if (error) throw error
+      if (error) {
+        const errorResult = handleClientError(error, ErrorCodes.AUTH_SIGN_IN)
+        throw Object.assign(new Error(errorResult.message), { errorResult })
+      }
 
       if (!data.user) throw new Error('No user data returned')
 
@@ -26,7 +29,11 @@ class AuthService {
         created_at: data.user.created_at,
       }
     } catch (error) {
-      throw new Error(handleClientError(error, ErrorCodes.AUTH_SIGN_IN))
+      if (error instanceof Error && 'errorResult' in error) {
+        throw error // Re-throw errors we've already handled
+      }
+      const errorResult = handleClientError(error, ErrorCodes.AUTH_SIGN_IN)
+      throw Object.assign(new Error(errorResult.message), { errorResult })
     }
   }
 

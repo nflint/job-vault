@@ -47,22 +47,54 @@ const ERROR_MESSAGES: Record<ErrorCode, Record<string, string>> = {
   },
 }
 
-export function handleClientError(error: unknown, code: ErrorCode): string {
-  // Log the error for debugging
-  console.error(`[${code}]`, error)
+interface AuthError {
+  message: string
+  status?: number
+}
 
-  // If it's our Error type with a message
-  if (error instanceof Error) {
-    // Check if we have a specific message for this error
-    const errorMessages = ERROR_MESSAGES[code]
-    const specificMessage = errorMessages[error.message]
-    if (specificMessage) {
-      return specificMessage
-    }
-    // If no specific message but we have an error message, use it
-    return error.message
+export interface ErrorResult {
+  message: string          // User-friendly message
+  devMessage?: string      // Detailed message for development
+  originalError?: unknown  // Original error object for debugging
+}
+
+export function handleClientError(error: unknown, code: ErrorCode): ErrorResult {
+  const showDetails = process.env.NEXT_PUBLIC_SHOW_DETAILED_ERRORS === 'true'
+  
+  // Log error if details are enabled
+  if (showDetails) {
+    console.error(`[${code}]`, error)
   }
 
-  // For unknown errors, return a generic message
-  return `An unexpected error occurred. Please try again.`
+  // Handle Supabase AuthError objects
+  if (error && typeof error === 'object' && 'message' in error) {
+    const authError = error as AuthError
+    const errorMessages = ERROR_MESSAGES[code]
+    const userMessage = errorMessages[authError.message] || 'An unexpected error occurred. Please try again.'
+    
+    return {
+      message: userMessage,
+      devMessage: showDetails ? `Original error: ${authError.message}` : undefined,
+      originalError: showDetails ? error : undefined
+    }
+  }
+
+  // Handle standard Error objects
+  if (error instanceof Error) {
+    const errorMessages = ERROR_MESSAGES[code]
+    const userMessage = errorMessages[error.message] || 'An unexpected error occurred. Please try again.'
+    
+    return {
+      message: userMessage,
+      devMessage: showDetails ? `Original error: ${error.message}\n${error.stack}` : undefined,
+      originalError: showDetails ? error : undefined
+    }
+  }
+
+  // For unknown errors
+  return {
+    message: 'An unexpected error occurred. Please try again.',
+    devMessage: showDetails ? `Unknown error type: ${String(error)}` : undefined,
+    originalError: showDetails ? error : undefined
+  }
 } 
