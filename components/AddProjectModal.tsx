@@ -1,14 +1,20 @@
-import { useState } from "react"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import * as z from "zod"
+import { useState, useEffect } from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import * as z from 'zod'
+import { projectsService } from '@/lib/projects'
+import { getProfessionalHistory } from '@/lib/professional-history'
+import { supabase } from '@/lib/supabase'
+import { toast } from 'sonner'
+import type { Project } from '@/types'
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
+  DialogTrigger,
+} from '@/components/ui/dialog'
 import {
   Form,
   FormControl,
@@ -16,115 +22,139 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { Textarea } from "@/components/ui/textarea"
-import type { Project } from "@/types"
-import { supabase } from "@/lib/supabase"
+} from '@/components/ui/form'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
+import { Textarea } from '@/components/ui/textarea'
 
-const formSchema = z.object({
-  name: z.string().min(1, "Project name is required"),
+const projectSchema = z.object({
+  name: z.string().min(1, 'Project name is required'),
   description: z.string().optional(),
-  url: z.string().url("Must be a valid URL").optional().or(z.literal("")),
-  technologies: z.string(),
+  url: z.string().url('Invalid URL').optional().or(z.literal('')),
+  technologies: z.string().optional(),
   start_date: z.string().optional(),
   end_date: z.string().optional(),
 })
 
-type FormValues = z.infer<typeof formSchema>
+type ProjectFormValues = z.infer<typeof projectSchema>
 
 interface AddProjectModalProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  historyId: string
+  trigger?: React.ReactNode
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
+  onSuccess?: () => void
   project?: Project
-  onSuccess: () => void
 }
 
-export function AddProjectModal({
-  open,
-  onOpenChange,
-  historyId,
-  project,
+export function AddProjectModal({ 
+  trigger,
+  open: controlledOpen,
+  onOpenChange: setControlledOpen,
   onSuccess,
+  project
 }: AddProjectModalProps) {
+  const [open, setOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [historyId, setHistoryId] = useState<string | null>(null)
 
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<ProjectFormValues>({
+    resolver: zodResolver(projectSchema),
     defaultValues: {
-      name: project?.name || "",
-      description: project?.description || "",
-      url: project?.url || "",
-      technologies: Array.isArray(project?.technologies) 
-        ? project.technologies.join(', ')
-        : project?.technologies || "",
-      start_date: project?.start_date ? new Date(project.start_date).toISOString().split('T')[0] : "",
-      end_date: project?.end_date ? new Date(project.end_date).toISOString().split('T')[0] : "",
+      name: project?.name || '',
+      description: project?.description || '',
+      url: project?.url || '',
+      technologies: project?.technologies ? project.technologies.join(', ') : '',
+      start_date: project?.start_date || '',
+      end_date: project?.end_date || '',
     },
   })
 
-  async function onSubmit(values: FormValues) {
-    setIsSubmitting(true)
-    try {
-      const endpoint = project 
-        ? `/api/projects/${project.id}`
-        : `/api/projects`
-
-      const method = project ? "PUT" : "POST"
-      
-      // Convert technologies string to array
-      const technologies = values.technologies
-        .split(',')
-        .map(t => t.trim())
-        .filter(t => t.length > 0)
-
-      // Get the session
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session) {
-        throw new Error("Not authenticated - Please log in again")
-      }
-
-      const response = await fetch(endpoint, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${session.access_token}`
-        },
-        body: JSON.stringify({
-          ...values,
-          technologies,
-          history_id: historyId,
-        }),
+  useEffect(() => {
+    if (project) {
+      form.reset({
+        name: project.name,
+        description: project.description || '',
+        url: project.url || '',
+        technologies: project.technologies ? project.technologies.join(', ') : '',
+        start_date: project.start_date || '',
+        end_date: project.end_date || '',
       })
+      setHistoryId(project.history_id)
+    } else {
+      loadHistory()
+    }
+  }, [project, form])
 
-      if (!response.ok) {
-        const errorData = await response.text()
-        throw new Error(`Failed to save project: ${errorData}`)
+  async function loadHistory() {
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        toast.error('Please sign in to add projects')
+        return
       }
 
-      onSuccess()
-      onOpenChange(false)
-      form.reset()
+      const history = await getProfessionalHistory(user.id)
+      setHistoryId(history.id)
     } catch (error) {
-      console.error("Error saving project:", error)
-      // Re-throw the error so the form can handle it
-      throw error
+      console.error('Failed to load professional history:', error)
+      toast.error('Failed to load professional history')
+    }
+  }
+
+  const isControlled = controlledOpen !== undefined && setControlledOpen !== undefined
+  const isOpen = isControlled ? controlledOpen : open
+  const setIsOpen = isControlled ? setControlledOpen : setOpen
+
+  const onSubmit = async (data: ProjectFormValues) => {
+    if (!historyId) {
+      toast.error('Professional history not found')
+      return
+    }
+
+    try {
+      setIsSubmitting(true)
+      const technologies = data.technologies?.split(',').map((t: string) => t.trim()).filter(Boolean) || []
+
+      if (project) {
+        await projectsService.update(project.id, {
+          ...data,
+          technologies,
+        })
+        toast.success('Project updated successfully')
+      } else {
+        await projectsService.create({
+          ...data,
+          history_id: historyId,
+          source: 'manual',
+          technologies,
+        })
+        toast.success('Project created successfully')
+      }
+      
+      form.reset()
+      setIsOpen(false)
+      onSuccess?.()
+    } catch (error) {
+      if (error instanceof Error && 'errorResult' in error) {
+        const { message } = error.errorResult as { message: string }
+        toast.error(message)
+      } else {
+        toast.error(project ? 'Failed to update project' : 'Failed to create project')
+        console.error(project ? '[UPDATE_PROJECT]' : '[CREATE_PROJECT]', error)
+      }
     } finally {
       setIsSubmitting(false)
     }
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px]">
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
+      <DialogContent>
         <DialogHeader>
-          <DialogTitle>
-            {project ? "Edit Project" : "Add Project"}
-          </DialogTitle>
+          <DialogTitle>{project ? 'Edit Project' : 'Add Project'}</DialogTitle>
           <DialogDescription>
-            Add details about your project. Dates and URL are optional.
+            {project ? 'Update your project details' : 'Add a new project to your portfolio'}
           </DialogDescription>
         </DialogHeader>
 
@@ -137,7 +167,7 @@ export function AddProjectModal({
                 <FormItem>
                   <FormLabel>Project Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="My Awesome Project" {...field} />
+                    <Input {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -151,11 +181,7 @@ export function AddProjectModal({
                 <FormItem>
                   <FormLabel>Description</FormLabel>
                   <FormControl>
-                    <Textarea
-                      placeholder="Describe your project..."
-                      className="h-32"
-                      {...field}
-                    />
+                    <Textarea {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -169,11 +195,7 @@ export function AddProjectModal({
                 <FormItem>
                   <FormLabel>Project URL</FormLabel>
                   <FormControl>
-                    <Input 
-                      type="url" 
-                      placeholder="https://github.com/username/project" 
-                      {...field} 
-                    />
+                    <Input {...field} type="url" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -185,12 +207,9 @@ export function AddProjectModal({
               name="technologies"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Technologies Used</FormLabel>
+                  <FormLabel>Technologies (comma-separated)</FormLabel>
                   <FormControl>
-                    <Input 
-                      placeholder="React, TypeScript, Node.js" 
-                      {...field} 
-                    />
+                    <Input {...field} placeholder="React, TypeScript, Node.js" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -205,7 +224,7 @@ export function AddProjectModal({
                   <FormItem>
                     <FormLabel>Start Date</FormLabel>
                     <FormControl>
-                      <Input type="date" {...field} />
+                      <Input {...field} type="date" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -219,7 +238,7 @@ export function AddProjectModal({
                   <FormItem>
                     <FormLabel>End Date</FormLabel>
                     <FormControl>
-                      <Input type="date" {...field} />
+                      <Input {...field} type="date" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -227,16 +246,16 @@ export function AddProjectModal({
               />
             </div>
 
-            <div className="flex justify-end space-x-2">
+            <div className="flex justify-end gap-2">
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => onOpenChange(false)}
+                onClick={() => setIsOpen(false)}
               >
                 Cancel
               </Button>
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Saving..." : project ? "Update" : "Add"}
+                {isSubmitting ? (project ? 'Updating...' : 'Creating...') : (project ? 'Update Project' : 'Create Project')}
               </Button>
             </div>
           </form>
@@ -244,4 +263,4 @@ export function AddProjectModal({
       </DialogContent>
     </Dialog>
   )
-} 
+}
