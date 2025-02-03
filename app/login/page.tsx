@@ -1,15 +1,14 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { supabase } from '@/lib/supabase'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Eye, EyeOff } from 'lucide-react'
 import { Button } from "@/components/ui/button"
-import { authService } from '@/lib/auth'
 
 export default function LoginPage() {
   const router = useRouter()
-  const searchParams = useSearchParams()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -19,31 +18,32 @@ export default function LoginPage() {
 
   useEffect(() => {
     // Check if user is already authenticated
-    authService.getSession().then((session) => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
-        // Redirect to the original destination or default to jobs
-        const from = searchParams.get('from')
-        router.push(from || '/jobs')
+        router.push('/jobs')
       } else {
         setLoading(false)
       }
     })
-  }, [router, searchParams])
+  }, [router])
 
   async function handleSignIn(e: React.FormEvent) {
     e.preventDefault()
     setIsSubmitting(true)
-    setMessage(null)
-
     try {
-      await authService.signIn(email, password)
-      // Redirect to the original destination or default to jobs
-      const from = searchParams.get('from')
-      router.push(from || '/jobs')
-    } catch (error) {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
+      if (error) throw error
+      
+      // Redirect to jobs page after successful login
+      router.push('/jobs')
+    } catch (err) {
+      console.error('Error signing in:', err)
       setMessage({
         type: 'error',
-        text: error instanceof Error ? error.message : 'An unexpected error occurred'
+        text: err instanceof Error ? err.message : 'Failed to sign in'
       })
     } finally {
       setIsSubmitting(false)

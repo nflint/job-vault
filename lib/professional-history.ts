@@ -12,74 +12,87 @@ import type {
 } from '@/types'
 import { supabase as defaultSupabase } from './supabase'
 import type { SupabaseClient } from '@supabase/supabase-js'
-import { handleClientError } from './error-handling'
 
 // Professional History
-export async function getProfessionalHistory(userId: string, client = supabase): Promise<ProfessionalHistory | null> {
-  try {
-    const { data: history, error } = await client
-      .from('professional_histories')
-      .select('*')
-      .eq('user_id', userId)
-      .maybeSingle()
+export async function getProfessionalHistory(userId: string) {
+  console.log('Getting professional history for user:', userId)
+  const { data, error } = await supabase
+    .from('professional_histories')
+    .select('*')
+    .eq('user_id', userId)
+    .single()
 
-    if (error) throw error
-    return history
-  } catch (error) {
-    throw new Error(handleClientError(error, 'HISTORY_GET'))
+  if (error) {
+    console.error('Error getting professional history:', error)
+    if (error.code === 'PGRST116') {
+      // No rows returned - this is expected for new users
+      throw new Error('No professional history found')
+    }
+    throw error
   }
+
+  if (!data) {
+    console.error('No data returned from professional history query')
+    throw new Error('No professional history found')
+  }
+
+  console.log('Found professional history:', data)
+  return data as ProfessionalHistory
 }
 
-export async function createProfessionalHistory(data: Partial<ProfessionalHistory>, client = supabase): Promise<ProfessionalHistory> {
-  try {
-    const { data: history, error } = await client
-      .from('professional_histories')
-      .insert([data])
-      .select()
-      .single()
+export async function createProfessionalHistory(userId: string) {
+  console.log('Creating professional history for user:', userId)
+  const { data, error } = await supabase
+    .from('professional_histories')
+    .insert([{ 
+      user_id: userId, 
+      is_complete: false,
+      last_updated: new Date().toISOString()
+    }])
+    .select()
+    .single()
 
-    if (error) throw error
-    return history
-  } catch (error) {
-    throw new Error(handleClientError(error, 'HISTORY_CREATE'))
+  if (error) {
+    console.error('Error creating professional history:', error)
+    throw error
   }
+
+  if (!data) {
+    console.error('No data returned from create professional history')
+    throw new Error('Failed to create professional history')
+  }
+
+  console.log('Created professional history:', data)
+  return data as ProfessionalHistory
 }
 
 // Work Experience
-export async function getWorkExperiences(historyId: string, client = supabase): Promise<WorkExperience[]> {
-  try {
-    const { data: experiences, error } = await client
-      .from('work_experiences')
-      .select(`
+export async function getWorkExperiences(historyId: string) {
+  const { data, error } = await supabase
+    .from('work_experiences')
+    .select(`
+      *,
+      achievements (
         *,
-        achievements (
-          *,
-          achievement_metrics (*)
-        )
-      `)
-      .eq('history_id', historyId)
-      .order('start_date', { ascending: false })
+        achievement_metrics (*)
+      )
+    `)
+    .eq('history_id', historyId)
+    .order('start_date', { ascending: false })
 
-    if (error) throw error
-    return experiences || []
-  } catch (error) {
-    throw new Error(handleClientError(error, 'EXPERIENCE_LIST'))
-  }
+  if (error) throw error
+  return data as (WorkExperience & { achievements: (Achievement & { achievement_metrics: AchievementMetric[] })[] })[]
 }
 
-export async function createWorkExperience(data: Partial<WorkExperience>, client = supabase): Promise<WorkExperience> {
-  try {
-    const { data: experience, error } = await client
-      .from('work_experiences')
-      .insert([data])
-      .select()
-      .single()
+export async function createWorkExperience(experience: Omit<WorkExperience, 'id' | 'created_at' | 'updated_at'>) {
+  const { data, error } = await supabase
+    .from('work_experiences')
+    .insert([experience])
+    .select()
+    .single()
 
-    if (error) throw error
-    return experience
-  } catch (error) {
-    throw new Error(handleClientError(error, 'EXPERIENCE_CREATE'))
-  }
+  if (error) throw error
+  return data as WorkExperience
 }
 
 export async function updateWorkExperience(id: string, experience: Partial<WorkExperience>) {
@@ -104,34 +117,36 @@ export async function deleteWorkExperience(id: string) {
 }
 
 // Education
-export async function getEducation(historyId: string, client = supabase): Promise<Education[]> {
-  try {
-    const { data: education, error } = await client
-      .from('education')
-      .select('*')
-      .eq('history_id', historyId)
-      .order('start_date', { ascending: false })
+export async function getEducation(historyId: string): Promise<Education[]> {
+  console.log('Fetching education for history:', historyId)
+  const { data, error } = await supabase
+    .from("education")
+    .select("*")
+    .eq("history_id", historyId)
+    .order("start_date", { ascending: false })
 
-    if (error) throw error
-    return education || []
-  } catch (error) {
-    throw new Error(handleClientError(error, 'EDUCATION_LIST'))
+  if (error) {
+    console.error("Error fetching education:", error)
+    throw error
   }
+
+  console.log('Education data:', data)
+  return data || []
 }
 
-export async function createEducation(data: Partial<Education>, client = supabase): Promise<Education> {
-  try {
-    const { data: education, error } = await client
-      .from('education')
-      .insert([data])
-      .select()
-      .single()
+export async function createEducation(education: Omit<Education, "id" | "created_at">): Promise<Education> {
+  const { data, error } = await supabase
+    .from("education")
+    .insert([education])
+    .select()
+    .single()
 
-    if (error) throw error
-    return education
-  } catch (error) {
-    throw new Error(handleClientError(error, 'EDUCATION_CREATE'))
+  if (error) {
+    console.error("Error creating education:", error)
+    throw error
   }
+
+  return data
 }
 
 export async function updateEducation(id: string, education: Partial<Education>): Promise<Education> {
@@ -163,34 +178,72 @@ export async function deleteEducation(id: string): Promise<void> {
 }
 
 // Projects
-export async function getProjects(historyId: string, client = supabase): Promise<Project[]> {
-  try {
-    const { data: projects, error } = await client
-      .from('projects')
-      .select('*')
-      .eq('history_id', historyId)
-      .order('start_date', { ascending: false })
+export async function getProjects(historyId: string): Promise<Project[]> {
+  console.log('Fetching projects for history:', historyId)
+  
+  // Log authentication status
+  const { data: { user } } = await supabase.auth.getUser()
+  console.log('Current user:', user?.id)
+  
+  // First verify the professional history exists
+  const { data: history, error: historyError } = await supabase
+    .from('professional_histories')
+    .select('*')
+    .eq('id', historyId)
+    .single()
+    
+  console.log('Professional history check:', { history, error: historyError })
 
-    if (error) throw error
-    return projects || []
-  } catch (error) {
-    throw new Error(handleClientError(error, 'PROJECT_LIST'))
+  const { data, error } = await supabase
+    .from("projects")
+    .select(`
+      *,
+      project_metrics (*)
+    `)
+    .eq("history_id", historyId)
+    .order("start_date", { ascending: false })
+
+  if (error) {
+    console.error("Error fetching projects:", error)
+    throw error
   }
+
+  console.log('Raw projects data:', data)
+  
+  // Check if data is properly structured
+  if (data) {
+    data.forEach((project, index) => {
+      console.log(`Project ${index + 1}:`, {
+        id: project.id,
+        name: project.name,
+        technologies: project.technologies,
+        history_id: project.history_id
+      })
+    })
+  }
+
+  return data || []
 }
 
-export async function createProject(data: Partial<Project>, client = supabase): Promise<Project> {
-  try {
-    const { data: project, error } = await client
-      .from('projects')
-      .insert([data])
-      .select()
-      .single()
+export async function createProject(
+  project: Omit<Project, "id" | "created_at" | "updated_at">,
+  client: SupabaseClient = defaultSupabase
+): Promise<Project> {
+  const { data, error } = await client
+    .from("projects")
+    .insert([{
+      ...project,
+      updated_at: new Date().toISOString()
+    }])
+    .select()
+    .single()
 
-    if (error) throw error
-    return project
-  } catch (error) {
-    throw new Error(handleClientError(error, 'PROJECT_CREATE'))
+  if (error) {
+    console.error("Error creating project:", error)
+    throw error
   }
+
+  return data
 }
 
 export async function updateProject(id: string, project: Partial<Project>): Promise<Project> {
@@ -225,37 +278,29 @@ export async function deleteProject(id: string): Promise<void> {
 }
 
 // Skills
-export async function getSkills(historyId: string, client = supabase): Promise<Skill[]> {
-  try {
-    const { data: skills, error } = await client
-      .from('skills')
-      .select(`
-        *,
-        skill_contexts (*)
-      `)
-      .eq('history_id', historyId)
-      .order('name')
+export async function getSkills(historyId: string) {
+  const { data, error } = await supabase
+    .from('skills')
+    .select(`
+      *,
+      skill_contexts (*)
+    `)
+    .eq('history_id', historyId)
+    .order('name')
 
-    if (error) throw error
-    return skills || []
-  } catch (error) {
-    throw new Error(handleClientError(error, 'SKILL_LIST'))
-  }
+  if (error) throw error
+  return data as (Skill & { skill_contexts: SkillContext[] })[]
 }
 
-export async function createSkill(data: Partial<Skill>, client = supabase): Promise<Skill> {
-  try {
-    const { data: skill, error } = await client
-      .from('skills')
-      .insert([data])
-      .select()
-      .single()
+export async function createSkill(skill: Omit<Skill, 'id' | 'created_at' | 'updated_at'>) {
+  const { data, error } = await supabase
+    .from('skills')
+    .insert([skill])
+    .select()
+    .single()
 
-    if (error) throw error
-    return skill
-  } catch (error) {
-    throw new Error(handleClientError(error, 'SKILL_CREATE'))
-  }
+  if (error) throw error
+  return data as Skill
 }
 
 export async function updateSkill(id: string, skill: Partial<Skill>) {
@@ -334,34 +379,66 @@ export async function deleteAchievementMetric(id: string) {
 }
 
 // Certifications
-export async function getCertifications(historyId: string, client = supabase): Promise<Certification[]> {
-  try {
-    const { data: certifications, error } = await client
-      .from('certifications')
-      .select('*')
-      .eq('history_id', historyId)
-      .order('issue_date', { ascending: false })
+export async function getCertifications(historyId: string): Promise<Certification[]> {
+  console.log('Fetching certifications for history:', historyId)
+  
+  // Log authentication status
+  const { data: { user } } = await supabase.auth.getUser()
+  console.log('Current user:', user?.id)
+  
+  // First verify the professional history exists
+  const { data: history, error: historyError } = await supabase
+    .from('professional_histories')
+    .select('*')
+    .eq('id', historyId)
+    .single()
+    
+  console.log('Professional history check:', { history, error: historyError })
 
-    if (error) throw error
-    return certifications || []
-  } catch (error) {
-    throw new Error(handleClientError(error, 'CERTIFICATION_LIST'))
+  const { data, error } = await supabase
+    .from("certifications")
+    .select("*")
+    .eq("history_id", historyId)
+    .order("issue_date", { ascending: false })
+
+  if (error) {
+    console.error("Error fetching certifications:", error)
+    throw error
   }
+
+  console.log('Raw certifications data:', data)
+  
+  // Check if data is properly structured
+  if (data) {
+    data.forEach((cert, index) => {
+      console.log(`Certification ${index + 1}:`, {
+        id: cert.id,
+        name: cert.name,
+        issuer: cert.issuer,
+        history_id: cert.history_id
+      })
+    })
+  }
+
+  return data || []
 }
 
-export async function createCertification(data: Partial<Certification>, client = supabase): Promise<Certification> {
-  try {
-    const { data: certification, error } = await client
-      .from('certifications')
-      .insert([data])
-      .select()
-      .single()
+export async function createCertification(
+  certification: Omit<Certification, "id" | "created_at" | "updated_at">,
+  client: SupabaseClient = defaultSupabase
+): Promise<Certification> {
+  const { data, error } = await client
+    .from("certifications")
+    .insert([certification])
+    .select()
+    .single()
 
-    if (error) throw error
-    return certification
-  } catch (error) {
-    throw new Error(handleClientError(error, 'CERTIFICATION_CREATE'))
+  if (error) {
+    console.error("Error creating certification:", error)
+    throw error
   }
+
+  return data
 }
 
 export async function updateCertification(
