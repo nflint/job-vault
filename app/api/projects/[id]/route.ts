@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
-import { updateProject, deleteProject } from "@/lib/professional-history"
+import { projectsService } from '@/lib/projects'
+import type { ErrorResult } from '@/lib/error-handling'
 import { supabase } from "@/lib/supabase"
 
 export async function PUT(
@@ -9,11 +10,14 @@ export async function PUT(
   try {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
-      return new NextResponse("Unauthorized", { status: 401 })
+      return new NextResponse(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401 }
+      )
     }
 
     const body = await request.json()
-    const project = await updateProject(params.id, {
+    const project = await projectsService.update(params.id, {
       name: body.name,
       description: body.description,
       url: body.url || null,
@@ -24,8 +28,28 @@ export async function PUT(
 
     return NextResponse.json(project)
   } catch (error) {
-    console.error("[PROJECT_PUT]", error)
-    return new NextResponse("Internal error", { status: 500 })
+    // Use error result if available
+    if (error instanceof Error && 'errorResult' in error) {
+      const { message, devMessage } = error.errorResult as ErrorResult
+      return new NextResponse(
+        JSON.stringify({ 
+          error: message,
+          details: process.env.NEXT_PUBLIC_SHOW_DETAILED_ERRORS === 'true' ? devMessage : undefined
+        }),
+        { status: 400 }
+      )
+    }
+
+    // Fallback error handling
+    return new NextResponse(
+      JSON.stringify({ 
+        error: 'Failed to update project',
+        details: process.env.NEXT_PUBLIC_SHOW_DETAILED_ERRORS === 'true' 
+          ? error instanceof Error ? error.message : 'Unknown error'
+          : undefined
+      }),
+      { status: 500 }
+    )
   }
 }
 
@@ -36,13 +60,36 @@ export async function DELETE(
   try {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
-      return new NextResponse("Unauthorized", { status: 401 })
+      return new NextResponse(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401 }
+      )
     }
 
-    await deleteProject(params.id)
+    await projectsService.delete(params.id)
     return new NextResponse(null, { status: 204 })
   } catch (error) {
-    console.error("[PROJECT_DELETE]", error)
-    return new NextResponse("Internal error", { status: 500 })
+    // Use error result if available
+    if (error instanceof Error && 'errorResult' in error) {
+      const { message, devMessage } = error.errorResult as ErrorResult
+      return new NextResponse(
+        JSON.stringify({ 
+          error: message,
+          details: process.env.NEXT_PUBLIC_SHOW_DETAILED_ERRORS === 'true' ? devMessage : undefined
+        }),
+        { status: 400 }
+      )
+    }
+
+    // Fallback error handling
+    return new NextResponse(
+      JSON.stringify({ 
+        error: 'Failed to delete project',
+        details: process.env.NEXT_PUBLIC_SHOW_DETAILED_ERRORS === 'true' 
+          ? error instanceof Error ? error.message : 'Unknown error'
+          : undefined
+      }),
+      { status: 500 }
+    )
   }
 } 

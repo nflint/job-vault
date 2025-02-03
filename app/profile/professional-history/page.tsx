@@ -13,7 +13,7 @@ import { EducationTimeline } from "@/components/EducationTimeline"
 import { AddEducationModal } from "@/components/AddEducationModal"
 import { getProfessionalHistory, createProfessionalHistory, getWorkExperiences, getEducation, getProjects, getCertifications } from "@/lib/professional-history"
 import type { ProfessionalHistory, WorkExperience, Education, Project, Certification } from "@/types"
-import { ProjectTimeline } from "@/components/ProjectTimeline"
+import ProjectTimeline from "@/components/ProjectTimeline"
 import { AddProjectModal } from "@/components/AddProjectModal"
 import { CertificationTimeline } from "@/components/CertificationTimeline"
 
@@ -187,9 +187,10 @@ export default function ProfessionalHistoryPage() {
 
             <TabsContent value="projects" className="mt-6">
               <ProjectTimeline
-                historyId={history.id}
                 projects={projects}
-                onUpdate={loadData}
+                onProjectDeleted={async (projectId) => {
+                  await loadData()
+                }}
               />
             </TabsContent>
 
@@ -221,7 +222,6 @@ export default function ProfessionalHistoryPage() {
       <AddProjectModal
         open={isAddProjectModalOpen}
         onOpenChange={setIsAddProjectModalOpen}
-        historyId={history?.id}
         onSuccess={loadData}
       />
     </div>
