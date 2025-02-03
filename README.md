@@ -91,6 +91,89 @@ The application requires a Supabase database with the following tables:
 
 Refer to the schema documentation in `docs/resume-management-requirements.md` for detailed table structures.
 
+## Documentation Standards
+
+This project follows strict documentation standards to maintain code quality and developer experience.
+
+### Documentation Requirements
+
+- All files must include a file-level JSDoc comment explaining its purpose
+- All exported functions, classes, and interfaces must be documented
+- All parameters and return values must be typed and described
+- Complex logic sections should include explanatory comments
+
+### Example Documentation
+
+```typescript
+/**
+ * @fileoverview Brief description of the file's purpose
+ * Additional context about the module if needed
+ */
+
+/**
+ * Description of what the function does
+ * 
+ * @param {string} param1 - Description of param1
+ * @returns {boolean} Description of return value
+ * 
+ * @example
+ * const result = myFunction('test');
+ * // Returns: true
+ */
+function myFunction(param1: string): boolean {
+  // Implementation
+}
+```
+
+### Documentation Tools
+
+1. **VS Code Integration**
+   - Install recommended extensions:
+     - ESLint
+     - Better Comments
+     - Document This
+     - TypeScript JSDoc Plugin
+   - Auto-completion for JSDoc comments is enabled
+   - Documentation warnings show in real-time
+
+2. **Documentation Checker**
+   Run the documentation analysis tool:
+   ```bash
+   npm run check-docs
+   ```
+   This will:
+   - Analyze all TypeScript files for documentation issues
+   - Generate a report in `docs/documentation-report.md`
+   - List files needing documentation by priority
+
+3. **ESLint Rules**
+   The project uses ESLint with JSDoc and TypeScript plugins to enforce documentation standards:
+   - Required JSDoc comments for functions and classes
+   - Parameter and return type documentation
+   - Description requirements
+   - Type validation
+
+### Adding Documentation
+
+1. **For New Code**:
+   - Add JSDoc comments before writing the implementation
+   - Use VS Code's auto-complete suggestions
+   - Include examples for complex functions
+   - Run `npm run check-docs` before committing
+
+2. **For Existing Code**:
+   - Run the documentation checker to identify priority files
+   - Add documentation progressively during modifications
+   - Focus on exported and public interfaces first
+   - Include context about complex logic
+
+3. **Best Practices**:
+   - Keep comments clear and concise
+   - Explain the "why" not just the "what"
+   - Update documentation when changing code
+   - Include examples for non-obvious usage
+   - Document edge cases and limitations
+
 ## Contributing
 
 1. Fork the repository
