@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Jobs management page component for tracking and managing job applications
+ * Implements a data table and status pipeline for job tracking
+ */
+
 "use client"
 
 import { useState, useEffect } from "react"
@@ -33,6 +38,14 @@ import Link from "next/link"
 import { useToast } from "@/hooks/use-toast"
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert"
 import { AlertCircle } from 'lucide-react'
+
+/**
+ * Interface for table cell actions
+ * @interface
+ */
+interface TableMeta {
+  updateData: (updatedJob: Job) => Promise<void>
+}
 
 interface DeleteConfirmDialogProps {
   jobId: number
@@ -79,7 +92,17 @@ function DeleteConfirmDialog({ jobId, jobTitle, onConfirm }: DeleteConfirmDialog
   )
 }
 
-export default function JobsPage() {
+/**
+ * Jobs page component for managing job applications
+ * Features a status pipeline view and detailed data table
+ * 
+ * @returns {JSX.Element} Rendered jobs page with management interface
+ * 
+ * @example
+ * // In app routing:
+ * <Route path="/jobs" component={JobsPage} />
+ */
+export default function JobsPage(): JSX.Element {
   const [jobs, setJobs] = useState<Job[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)

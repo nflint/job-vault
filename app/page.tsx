@@ -1,15 +1,30 @@
+/**
+ * @fileoverview Home page component that serves as the landing page for Job Vault
+ * Features a hero section, feature highlights, and call-to-action sections
+ */
+
 import { Metadata } from 'next'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ChartLine, BrainCircuit, BarChart3, Rocket } from "lucide-react"
 import Link from 'next/link'
 
+/**
+ * Landing page component with marketing content and user entry points
+ * Implements a modern, gradient-styled layout with feature cards
+ * 
+ * @returns {JSX.Element} Rendered home page with hero, features, and CTA sections
+ * 
+ * @example
+ * // In app routing:
+ * <Route path="/" component={HomePage} />
+ */
 export const metadata: Metadata = {
   title: 'Job Vault | Smart Job Application Tracking',
   description: 'Track and optimize your job search with AI-powered insights and analytics',
 }
 
-export default function HomePage() {
+export default function HomePage(): JSX.Element {
   return (
     <main className="min-h-screen">
       {/* Hero Section */}

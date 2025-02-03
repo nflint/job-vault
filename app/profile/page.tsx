@@ -1,3 +1,8 @@
+/**
+ * @fileoverview User profile management page component
+ * Handles user profile information, settings, and navigation to related sections
+ */
+
 "use client"
 
 import { useState, useEffect } from "react"
@@ -16,6 +21,9 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 
+/**
+ * Form schema for profile data validation
+ */
 const profileSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
   lastName: z.string().min(1, "Last name is required"),
@@ -33,6 +41,21 @@ const profileSchema = z.object({
   emailNotifications: z.boolean(),
 })
 
+/**
+ * Type for profile form data
+ */
+type FormData = z.infer<typeof profileSchema>
+
+/**
+ * Profile page component for managing user information
+ * Includes form validation, data persistence, and navigation to related sections
+ * 
+ * @returns {JSX.Element} Rendered profile page with form and navigation
+ * 
+ * @example
+ * // In app routing:
+ * <Route path="/profile" component={ProfilePage} />
+ */
 export default function ProfilePage() {
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
