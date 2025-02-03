@@ -1,8 +1,33 @@
+/**
+ * @fileoverview Pricing page component that displays subscription tiers and their features
+ * Implements a responsive pricing table with highlighted premium options
+ */
+
 import { Check } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 
-const tiers = [
+/**
+ * Interface defining the structure of a pricing tier
+ * @interface
+ */
+interface PricingTier {
+  /** Name of the pricing tier */
+  name: string
+  /** Monthly price in USD */
+  price: string
+  /** Short description of the tier */
+  description: string
+  /** List of features included in the tier */
+  features: string[]
+  /** Call-to-action button text */
+  cta: string
+  /** Whether this tier should be visually highlighted */
+  highlighted: boolean
+}
+
+/** Array of pricing tiers with their respective features and pricing information */
+const tiers: PricingTier[] = [
   {
     name: "Free",
     price: "0",
@@ -49,9 +74,20 @@ const tiers = [
   },
 ]
 
-export default function PricingPage() {
+/**
+ * Pricing page component that displays available subscription tiers
+ * Implements a responsive grid layout with feature lists and CTAs
+ * 
+ * @returns {JSX.Element} Rendered pricing page with subscription tiers
+ * 
+ * @example
+ * // In app routing:
+ * <Route path="/pricing" component={PricingPage} />
+ */
+export default function PricingPage(): JSX.Element {
   return (
     <div className="container mx-auto px-4 py-16">
+      {/* Page Header */}
       <div className="text-center mb-16">
         <h1 className="text-4xl font-bold tracking-tight mb-4">
           Simple, transparent pricing
@@ -61,6 +97,7 @@ export default function PricingPage() {
         </p>
       </div>
 
+      {/* Pricing Tiers Grid */}
       <div className="grid md:grid-cols-3 gap-8 max-w-7xl mx-auto">
         {tiers.map((tier) => (
           <Card
@@ -71,6 +108,7 @@ export default function PricingPage() {
                 : "border border-border"
             }`}
           >
+            {/* Highlight Badge */}
             {tier.highlighted && (
               <div className="absolute -top-5 left-0 right-0 mx-auto w-fit">
                 <span className="bg-primary text-primary-foreground text-sm font-medium px-3 py-1 rounded-full">
@@ -79,6 +117,7 @@ export default function PricingPage() {
               </div>
             )}
 
+            {/* Tier Header */}
             <div className="mb-8">
               <h3 className="text-2xl font-bold mb-2">{tier.name}</h3>
               <div className="flex items-baseline gap-x-2">
@@ -90,6 +129,7 @@ export default function PricingPage() {
               <p className="mt-4 text-muted-foreground">{tier.description}</p>
             </div>
 
+            {/* Feature List */}
             <ul className="space-y-4 flex-grow mb-8">
               {tier.features.map((feature) => (
                 <li key={feature} className="flex items-center gap-x-3">
@@ -99,6 +139,7 @@ export default function PricingPage() {
               ))}
             </ul>
 
+            {/* Call to Action */}
             <Button
               size="lg"
               className={`w-full ${
@@ -111,6 +152,7 @@ export default function PricingPage() {
         ))}
       </div>
 
+      {/* Trial Notice */}
       <div className="text-center mt-16">
         <p className="text-muted-foreground">
           All plans include a 14-day free trial. No credit card required.

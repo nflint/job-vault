@@ -13,19 +13,43 @@ interface DocumentationIssue {
 }
 
 /**
+ * Gets the list of file patterns to check, filtering out non-existent directories
+ * 
+ * @returns {string[]} Array of file patterns to check
+ */
+function getFilePatterns(): string[] {
+  const basePatterns = [
+    './app/**/*.ts',
+    './app/**/*.tsx',
+    './app/**/page.tsx',
+    './app/**/layout.tsx',
+    './lib/**/*.ts',
+    './components/**/*.tsx',
+  ]
+
+  // Add optional directory patterns if they exist
+  if (fs.existsSync('./utils')) {
+    basePatterns.push('./utils/**/*.ts')
+  }
+
+  return basePatterns
+}
+
+/**
  * Analyzes TypeScript files for documentation issues
  * 
  * @returns {Promise<DocumentationIssue[]>} Array of files with documentation issues
  */
 async function analyzeDocumentation(): Promise<DocumentationIssue[]> {
   const eslint = new ESLint()
-  const results = await eslint.lintFiles(['./app/**/*.ts', './app/**/*.tsx', './lib/**/*.ts', './components/**/*.tsx'])
+  const results = await eslint.lintFiles(getFilePatterns())
   
   const issues: DocumentationIssue[] = []
   
   for (const result of results) {
     const documentationWarnings = result.messages.filter(msg => 
-      msg.ruleId?.startsWith('jsdoc/')
+      msg.ruleId?.startsWith('jsdoc/') || 
+      msg.ruleId?.startsWith('@typescript-eslint/explicit-function-return-type')
     )
     
     if (documentationWarnings.length > 0) {
