@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server"
 import { updateCertification, deleteCertification } from "@/lib/professional-history"
 import { createClient } from '@supabase/supabase-js'
-import { getAuthErrorResponse, getApiErrorResponse } from '@/lib/error-handling'
 
 // Helper function to get error message based on environment
 function getErrorMessage(error: any, detailedMessage: string) {
@@ -19,7 +18,10 @@ export async function PUT(
     // Get auth token from request header
     const authHeader = request.headers.get('Authorization')
     if (!authHeader) {
-      return getAuthErrorResponse('No token provided', 'Missing authorization header')
+      return new NextResponse(
+        getErrorMessage(null, "Unauthorized - No token provided"),
+        { status: 401 }
+      )
     }
 
     // Create Supabase client with auth token
@@ -37,7 +39,10 @@ export async function PUT(
     
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
-      return getAuthErrorResponse('Invalid token', authError?.message || 'Authentication failed')
+      return new NextResponse(
+        getErrorMessage(authError, "Unauthorized - Invalid token"),
+        { status: 401 }
+      )
     }
 
     const body = await request.json()
@@ -52,7 +57,11 @@ export async function PUT(
 
     return NextResponse.json(certification)
   } catch (error) {
-    return getApiErrorResponse(error, 'CERTIFICATION_UPDATE')
+    console.error("[CERTIFICATION_PUT]", error)
+    return new NextResponse(
+      getErrorMessage(error, `Internal error: ${error instanceof Error ? error.message : 'Unknown error'}`),
+      { status: 500 }
+    )
   }
 }
 
@@ -64,7 +73,10 @@ export async function DELETE(
     // Get auth token from request header
     const authHeader = request.headers.get('Authorization')
     if (!authHeader) {
-      return getAuthErrorResponse('No token provided', 'Missing authorization header')
+      return new NextResponse(
+        getErrorMessage(null, "Unauthorized - No token provided"),
+        { status: 401 }
+      )
     }
 
     // Create Supabase client with auth token
@@ -82,12 +94,19 @@ export async function DELETE(
     
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
-      return getAuthErrorResponse('Invalid token', authError?.message || 'Authentication failed')
+      return new NextResponse(
+        getErrorMessage(authError, "Unauthorized - Invalid token"),
+        { status: 401 }
+      )
     }
 
     await deleteCertification(params.id, supabase)
     return new NextResponse(null, { status: 204 })
   } catch (error) {
-    return getApiErrorResponse(error, 'CERTIFICATION_DELETE')
+    console.error("[CERTIFICATION_DELETE]", error)
+    return new NextResponse(
+      getErrorMessage(error, `Internal error: ${error instanceof Error ? error.message : 'Unknown error'}`),
+      { status: 500 }
+    )
   }
 } 
